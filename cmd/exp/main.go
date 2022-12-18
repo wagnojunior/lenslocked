@@ -9,7 +9,7 @@ type User struct {
 	Name string
 	Age  int
 	Meta UserMeta
-	Bio  template.HTML
+	Bio  string
 }
 
 type UserMeta struct {
