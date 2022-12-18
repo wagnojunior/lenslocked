@@ -51,11 +51,9 @@ func contactHandler(w http.ResponseWriter, r *http.Request) {
 
 // faqHandler handles the http request to the faq page
 func faqHandler(w http.ResponseWriter, r *http.Request) {
-	// Sets the content type of the response header
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-	// Writes a html tag to the respponse writer
-	fmt.Fprintf(w, "<h1>FAQ Page</h1><p>Q: Question number one? <p>A: Answer number one.")
+	// Joins path to template to be parsed and executed
+	tplPath := filepath.Join("templates", "faq.gohtml")
+	executeTemplate(w, tplPath)
 }
 
 // userHandler handles the http request to the user page
