@@ -1,11 +1,6 @@
-<h1>Hello, {{.Name}}. Your age is {{.Age}} and you visited the website {{.Meta.Visits}} times!</h1>
+<h1>Hello, {{.Name}}. Your age is {{.Age}} and you visited the website {{.Meta.Visits}} times for an average {{.Meta.AvgTime}} hours per visit!</h1>
 <p>Bio: {{.Bio}}</p>
 
-<script>
-    const user = {
-        "name": {{.Name}},
-        "age": {{.Age}},
-        "bio": {{.Bio}}
-    };
-    console.log(user);
-</script>
+<p>
+    {{range .Week}} T1 {{else}} T0 {{end}}
+</p>
