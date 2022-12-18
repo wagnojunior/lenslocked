@@ -9,11 +9,13 @@ import (
 
 // homeHandler handles http requests to the home page
 func homeHandler(w http.ResponseWriter, r *http.Request) {
+	bio := `<script>alert("HaHa, you have been h4x0r3d!");</script>`
+
 	// Sets the content type of the response header
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	// Writes a html tag to the response writer w
-	fmt.Fprint(w, "<h1>Welcome to my awesome site!</h1>")
+	fmt.Fprint(w, "<h1>Welcome to my awesome site!</h1><p>Bio:"+bio+"</p>")
 }
 
 // contactHandler handles the http requests to the contact page
