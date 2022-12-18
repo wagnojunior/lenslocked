@@ -5,18 +5,18 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"path/filepath"
 
 	"github.com/go-chi/chi/v5"
 )
 
-// homeHandler handles http requests to the home page
-func homeHandler(w http.ResponseWriter, r *http.Request) {
+func executeTemplate(w http.ResponseWriter, filepath string) {
 	// Sets the content type of the response header
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	// Parses the template home.gohtml located in the folder <templates>
 	// If there is an error parsing, it will be handled here (invalid function in the template)
-	tpl, err := template.ParseFiles("templates/home.gohtml")
+	tpl, err := template.ParseFiles(filepath)
 	if err != nil {
 		log.Printf("parsing templates: %v", err)
 		http.Error(w, "There was an error parsing the template.", http.StatusInternalServerError)
@@ -35,13 +35,18 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// homeHandler handles http requests to the home page
+func homeHandler(w http.ResponseWriter, r *http.Request) {
+	// Joins path to template to be parsed and executed
+	tplPath := filepath.Join("templates", "home.gohtml")
+	executeTemplate(w, tplPath)
+}
+
 // contactHandler handles the http requests to the contact page
 func contactHandler(w http.ResponseWriter, r *http.Request) {
-	// Sets the content type of the response header
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-	// Writes a html tag to the response writer w
-	fmt.Fprint(w, "<h1>Contact Page</h1><p>To get in touch, email me at <a href=\"mailto:wagnojunior@gmail.com\">wagnojunior@gmail.com</a>.")
+	// Joins path to template to be parsed and executed
+	tplPath := filepath.Join("templates", "contact.gohtml")
+	executeTemplate(w, tplPath)
 }
 
 // faqHandler handles the http request to the faq page
