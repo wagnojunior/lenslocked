@@ -10,10 +10,12 @@ type User struct {
 	Age  int
 	Meta UserMeta
 	Bio  string
+	Week []int
 }
 
 type UserMeta struct {
-	Visits int
+	Visits  int
+	AvgTime int
 }
 
 func main() {
@@ -23,14 +25,18 @@ func main() {
 		panic(err)
 	}
 
+	week := []int{1, 2, 3, 4, 5, 6, 7}
+
 	// Creates and populates a variable of type User
 	user := User{
 		Name: "Wagno Lee",
 		Age:  45,
 		Meta: UserMeta{
-			Visits: 4,
+			Visits:  4,
+			AvgTime: 3,
 		},
-		Bio: `<script>alert("HaHa, you have been h4x0r3d!");</script>`,
+		Bio:  "This is my bio. Do you like it?",
+		Week: week,
 	}
 
 	// Process the template

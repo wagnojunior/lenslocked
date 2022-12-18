@@ -10,6 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+// executeTemplate parses and executes a gohtml template
 func executeTemplate(w http.ResponseWriter, filepath string) {
 	// Sets the content type of the response header
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
