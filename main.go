@@ -2,38 +2,26 @@ package main
 
 import (
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
 	"path/filepath"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/wagnojunior/lenslocked/views"
 )
 
 // executeTemplate parses and executes a gohtml template
 func executeTemplate(w http.ResponseWriter, filepath string) {
-	// Sets the content type of the response header
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-	// Parses the template home.gohtml located in the folder <templates>
-	// If there is an error parsing, it will be handled here (invalid function in the template)
-	tpl, err := template.ParseFiles(filepath)
+	// Parses the template located at the directory filepath
+	t, err := views.Parse(filepath)
 	if err != nil {
-		log.Printf("parsing templates: %v", err)
+		log.Printf("parsing template: %v", err)
 		http.Error(w, "There was an error parsing the template.", http.StatusInternalServerError)
 		return
 	}
 
-	// Executes the template tpl without any data (nil)
-	// If there is an error rendering, it will be handled here (invalid field in the template)
-	// This approach writes to the response writer until an error is detected (if any). If an error
-	// is detected half-way through the execution, then the webpage will be half rendered
-	err = tpl.Execute(w, nil)
-	if err != nil {
-		log.Printf("executing templates: %v", err)
-		http.Error(w, "There was an error executing the template.", http.StatusInternalServerError)
-		return
-	}
+	// Executes the parsed template
+	t.Execute(w, nil)
 }
 
 // homeHandler handles http requests to the home page
