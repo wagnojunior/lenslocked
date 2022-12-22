@@ -3,6 +3,7 @@ package views
 import (
 	"fmt"
 	"html/template"
+	"io/fs"
 	"log"
 	"net/http"
 )
@@ -18,6 +19,17 @@ func Must(t Template, err error) Template {
 		panic(err)
 	}
 	return t
+}
+
+// ParseFS parses the template located in the file system fs
+func ParseFS(fs fs.FS, pattern string) (Template, error) {
+	tpl, err := template.ParseFS(fs, pattern)
+	if err != nil {
+		return Template{}, fmt.Errorf("parsing template: %w", err)
+	}
+
+	// If there is no error, then return
+	return Template{HTMLTpl: tpl}, nil
 }
 
 // Parse parses the template located in the filepath

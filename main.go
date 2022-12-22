@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"path/filepath"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/wagnojunior/lenslocked/controllers"
+	"github.com/wagnojunior/lenslocked/templates"
 	"github.com/wagnojunior/lenslocked/views"
 )
 
@@ -16,17 +16,17 @@ func main() {
 
 	// Parses the home templates before the server starts
 	// views.Parse returns a Template and an error. This fits the scope of views.Must
-	tpl := views.Must(views.Parse(filepath.Join("templates", "home.gohtml")))
+	tpl := views.Must(views.ParseFS(templates.FS, "home.gohtml"))
 	r.Get("/", controllers.StaticHandler(tpl))
 
 	// Parses the contact templates before the server starts
 	// views.Parse returns a Template and an error. This fits the scope of views.Must
-	tpl = views.Must(views.Parse(filepath.Join("templates", "contact.gohtml")))
+	tpl = views.Must(views.ParseFS(templates.FS, "contact.gohtml"))
 	r.Get("/contact", controllers.StaticHandler(tpl))
 
 	// Parses the faq templates before the server starts
 	// views.Parse returns a Template and an error. This fits the scope of views.Must
-	tpl = views.Must(views.Parse(filepath.Join("templates", "faq.gohtml")))
+	tpl = views.Must(views.ParseFS(templates.FS, "faq.gohtml"))
 	r.Get("/faq", controllers.StaticHandler(tpl))
 
 	// Starts the server
