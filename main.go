@@ -16,7 +16,7 @@ func main() {
 
 	// Parses the home templates before the server starts
 	// views.Parse returns a Template and an error. This fits the scope of views.Must
-	tpl := views.Must(views.ParseFS(templates.FS, "home.gohtml"))
+	tpl := views.Must(views.ParseFS(templates.FS, "layout-page.gohtml", "home.gohtml"))
 	r.Get("/", controllers.StaticHandler(tpl))
 
 	// Parses the contact templates before the server starts
