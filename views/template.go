@@ -12,8 +12,16 @@ type Template struct {
 	HTMLTpl *template.Template
 }
 
+// Must  wraps a call to a function returning (Template, error) and panics if the error is non-nil
+func Must(t Template, err error) Template {
+	if err != nil {
+		panic(err)
+	}
+	return t
+}
+
+// Parse parses the template located in the filepath
 func Parse(filepath string) (Template, error) {
-	// Parses the template located in the filepath.
 	// If there is an error parsing, it will be handled here (i.e. invalid function in the template)
 	tpl, err := template.ParseFiles(filepath)
 	if err != nil {
