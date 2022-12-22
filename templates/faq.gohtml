@@ -1,12 +1,12 @@
 <h1>FAQ Page</h1>
 <ul>
-    <li>
-        <b>Question one:</b> Answer one.
-    </li>
-    <li>
-        <b>Question two:</b> Answer two.
-    </li>
-    <li>
-        <b>Question three:</b> Answer three.
-    </li>
+    {{range .}}
+        {{template "qa" .}}
+    {{end}}
 </ul>
+
+{{define "qa"}}
+<li>
+    <b>{{.Question}}:</b> {{.Answer}}
+</li>  
+{{end}}

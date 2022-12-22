@@ -53,7 +53,7 @@ func (t Template) Execute(w http.ResponseWriter, data interface{}) {
 	// If there is an error rendering, it will be handled here (i.e. invalid field in the template)
 	// This approach writes to the response writer until an error is detected (if any). If an error
 	// is detected half-way through the execution, then the webpage will be half rendered
-	err := t.HTMLTpl.Execute(w, nil)
+	err := t.HTMLTpl.Execute(w, data)
 	if err != nil {
 		log.Printf("executing templates: %v", err)
 		http.Error(w, "There was an error executing the template.", http.StatusInternalServerError)

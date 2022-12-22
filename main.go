@@ -27,7 +27,7 @@ func main() {
 	// Parses the faq templates before the server starts
 	// views.Parse returns a Template and an error. This fits the scope of views.Must
 	tpl = views.Must(views.ParseFS(templates.FS, "faq.gohtml"))
-	r.Get("/faq", controllers.StaticHandler(tpl))
+	r.Get("/faq", controllers.FAQ(tpl))
 
 	// Starts the server
 	// views.Parse returns a Template and an error. This fits the scope of views.Must
