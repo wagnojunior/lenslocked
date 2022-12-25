@@ -16,17 +16,25 @@ func main() {
 
 	// Parses the home templates before the server starts
 	// views.Parse returns a Template and an error. This fits the scope of views.Must
-	tpl := views.Must(views.ParseFS(templates.FS, "layout-page.gohtml", "home.gohtml"))
+	tpl := views.Must(views.ParseFS(
+		templates.FS,
+		"home.gohtml",
+		"tailwind.gohtml"))
 	r.Get("/", controllers.StaticHandler(tpl))
 
 	// Parses the contact templates before the server starts
 	// views.Parse returns a Template and an error. This fits the scope of views.Must
-	tpl = views.Must(views.ParseFS(templates.FS, "contact.gohtml"))
+	tpl = views.Must(views.ParseFS(templates.FS,
+		"contact.gohtml",
+		"tailwind.gohtml"))
 	r.Get("/contact", controllers.StaticHandler(tpl))
 
 	// Parses the faq templates before the server starts
 	// views.Parse returns a Template and an error. This fits the scope of views.Must
-	tpl = views.Must(views.ParseFS(templates.FS, "faq.gohtml"))
+	tpl = views.Must(views.ParseFS(
+		templates.FS,
+		"faq.gohtml",
+		"tailwind.gohtml"))
 	r.Get("/faq", controllers.FAQ(tpl))
 
 	// Starts the server
