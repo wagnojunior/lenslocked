@@ -49,7 +49,7 @@ func (t Template) Execute(w http.ResponseWriter, data interface{}) {
 	// Sets the content type of the response header
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	// Executes the template t without any data (nil)
+	// Executes the template t with data
 	// If there is an error rendering, it will be handled here (i.e. invalid field in the template)
 	// This approach writes to the response writer until an error is detected (if any). If an error
 	// is detected half-way through the execution, then the webpage will be half rendered

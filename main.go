@@ -37,13 +37,12 @@ func main() {
 		"tailwind.gohtml"))
 	r.Get("/faq", controllers.FAQ(tpl))
 
-	// Parses the sign up templates before the server starts
-	// views.Parse returns a Template and an error. This fits the scope of views.Must
-	tpl = views.Must(views.ParseFS(
+	usersC := controllers.Users{}
+	usersC.Templates.New = views.Must(views.ParseFS(
 		templates.FS,
 		"signup.gohtml",
 		"tailwind.gohtml"))
-	r.Get("/signup", controllers.StaticHandler(tpl))
+	r.Get("/signup", usersC.New)
 
 	// Starts the server
 	// views.Parse returns a Template and an error. This fits the scope of views.Must
