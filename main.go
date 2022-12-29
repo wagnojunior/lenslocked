@@ -47,6 +47,7 @@ func main() {
 		"signup.gohtml",
 		"tailwind.gohtml"))
 	r.Get("/signup", usersC.New)
+	r.Post("/users", usersC.Create)
 
 	// Starts the server
 	// views.Parse returns a Template and an error. This fits the scope of views.Must
