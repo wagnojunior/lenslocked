@@ -14,6 +14,7 @@ type Users struct {
 	}
 }
 
+// New executes the template `New` that is stored in `u.Templates`
 func (u Users) New(w http.ResponseWriter, r *http.Request) {
 	u.Templates.New.Execute(w, nil)
 }

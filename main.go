@@ -37,6 +37,10 @@ func main() {
 		"tailwind.gohtml"))
 	r.Get("/faq", controllers.FAQ(tpl))
 
+	// Initializes the controller for the users `usersC`. This controller receives the
+	// template that is parsed by `views.ParseFS`. `usersC.New` is a of type HandlerFunc,
+	// therefore it can be passed to `r.Get`. In here, `usersC.New` is passed as a type
+	// function, therefore no need to pass in the arguments.
 	usersC := controllers.Users{}
 	usersC.Templates.New = views.Must(views.ParseFS(
 		templates.FS,
