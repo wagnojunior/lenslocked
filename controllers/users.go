@@ -15,7 +15,11 @@ type Users struct {
 
 // New executes the template `New` that is stored in `u.Templates`
 func (u Users) New(w http.ResponseWriter, r *http.Request) {
-	u.Templates.New.Execute(w, nil)
+	var data struct {
+		Email string
+	}
+	data.Email = r.FormValue("email")
+	u.Templates.New.Execute(w, data)
 }
 
 // Create creates a new user when the sign up form is submited
