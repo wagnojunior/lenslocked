@@ -3,21 +3,19 @@ package controllers
 import (
 	"html/template"
 	"net/http"
-
-	"github.com/wagnojunior/lenslocked/views"
 )
 
 // StaticHandler executes a template and returns a HandlerFunc.
 // It is actually a closure, so it is possible to access variables outside of
 // its scope (such as tpl).
-func StaticHandler(tpl views.Template) http.HandlerFunc {
+func StaticHandler(tpl Template) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		tpl.Execute(w, nil)
 	}
 }
 
 // FAQ handles the templating of the FAQ page
-func FAQ(tpl views.Template) http.HandlerFunc {
+func FAQ(tpl Template) http.HandlerFunc {
 	questions := []struct {
 		Question string
 		Answer   template.HTML // This type indicates that it is safe to render the answers as HTML
