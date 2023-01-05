@@ -1,48 +1,46 @@
 package main
 
 import (
-	"html/template"
-	"os"
+	"database/sql"
+	"fmt"
+
+	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
-type User struct {
-	Name string
-	Age  int
-	Meta UserMeta
-	Bio  string
-	Week []int
+type PostgresConfig struct {
+	Host     string
+	Port     string
+	User     string
+	Password string
+	Database string
+	SSLMode  string
 }
 
-type UserMeta struct {
-	Visits  int
-	AvgTime int
+func (cfg PostgresConfig) String() string {
+	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+		cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.Database, cfg.SSLMode)
 }
 
 func main() {
-	// Pases the template <hello.gohtml>
-	t, err := template.ParseFiles("hello.gohtml")
+	cfg := PostgresConfig{
+		Host:     "localhost",
+		Port:     "5432",
+		User:     "baloo",
+		Password: "junglebook",
+		Database: "lenslocked",
+		SSLMode:  "disable",
+	}
+
+	db, err := sql.Open("pgx", cfg.String())
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	err = db.Ping()
 	if err != nil {
 		panic(err)
 	}
 
-	week := []int{1, 2, 3, 4, 5, 6, 7}
-
-	// Creates and populates a variable of type User
-	user := User{
-		Name: "Wagno Lee",
-		Age:  45,
-		Meta: UserMeta{
-			Visits:  4,
-			AvgTime: 3,
-		},
-		Bio:  "This is my bio. Do you like it?",
-		Week: week,
-	}
-
-	// Process the template
-	err = t.Execute(os.Stdout, user)
-	if err != nil {
-		panic(err)
-	}
-
+	fmt.Println("Connected!")
 }
