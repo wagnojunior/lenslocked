@@ -15,7 +15,7 @@ type User struct {
 	PasswordHash string
 }
 
-// UserService defines the connection to the DB
+// UserService defines the connection to the users DB
 type UserService struct {
 	DB *sql.DB
 }
@@ -32,7 +32,7 @@ func (us *UserService) Create(email, password string) (*User, error) {
 	}
 	passwordHash := string(hashedBytes)
 
-	// Creates a new user object with the information that is being writted to the DB
+	// Creates a new user object with the information that is being written to the DB
 	user := User{
 		Email:        email,
 		PasswordHash: passwordHash,
