@@ -3,14 +3,16 @@ package controllers
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/wagnojunior/lenslocked/models"
 )
 
-// Type Users holds a template struct that stores all the templates needed to render
-// different pages
+// Type Users holds a template struct that stores all the templates needed to render different pages
 type Users struct {
 	Templates struct {
 		New Template
 	}
+	UserService *models.UserService
 }
 
 // New executes the template `New` that is stored in `u.Templates`
