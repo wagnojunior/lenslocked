@@ -53,3 +53,29 @@ func (us *UserService) Create(email, password string) (*User, error) {
 	return &user, nil
 
 }
+
+// Authenticate authenticates a user who is signin in to the server. The parameters `email` and `password` are received from the GUI. The user ID and password hash are queried from the DB and `bcrypt` is used to to match the entered password hash to the DB-stored value.
+func (us *UserService) Authenticate(email, password string) (*User, error) {
+	email = strings.ToLower(email)
+
+	user := User{
+		Email: email,
+	}
+
+	row := us.DB.QueryRow(`
+		SELECT id, password_hash
+		FROM users
+		WHERE email = $1`, email)
+	err := row.Scan(&user.ID, &user.PasswordHash)
+	if err != nil {
+		return nil, fmt.Errorf("authenticate: %w", err)
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
+	if err != nil {
+		return nil, fmt.Errorf("authenticate: %w", err)
+	}
+
+	return &user, nil
+
+}
