@@ -74,15 +74,17 @@ func (u Users) ProcessSignIn(w http.ResponseWriter, r *http.Request) {
 
 	// Proper location to set cookies is after authentication and before writing to the response writer
 	cookie := http.Cookie{
-		Name:  "email",    // name of the cookie
-		Value: user.Email, // value being stored
-		Path:  "/",        // which paths on the server have access to this cookie
+		Name:     "email",    // name of the cookie
+		Value:    user.Email, // value being stored
+		Path:     "/",        // which paths on the server have access to this cookie
+		HttpOnly: true,       // cookie not accessible via javascript
 	}
 	http.SetCookie(w, &cookie)
 
 	fmt.Fprintf(w, "User authenticated: %+v", user)
 }
 
+// CurrentUser retrieves the value of the cookie `email` for the current user
 func (u Users) CurrentUser(w http.ResponseWriter, r *http.Request) {
 	email, err := r.Cookie("email")
 	if err != nil {
