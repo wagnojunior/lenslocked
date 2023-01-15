@@ -56,7 +56,7 @@ func ParseFS(fs fs.FS, patterns ...string) (Template, error) {
 // }
 
 // Execute executes a template of type <Template> that is already parsed
-func (t Template) Execute(w http.ResponseWriter, data interface{}) {
+func (t Template) Execute(w http.ResponseWriter, r *http.Request, data interface{}) {
 	// Sets the content type of the response header
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
