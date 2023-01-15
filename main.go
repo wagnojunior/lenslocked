@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/gorilla/csrf"
 	"github.com/wagnojunior/lenslocked/controllers"
 	"github.com/wagnojunior/lenslocked/models"
 	"github.com/wagnojunior/lenslocked/templates"
@@ -55,7 +56,14 @@ func main() {
 	r.Post("/signin", usersC.ProcessSignIn)
 	r.Get("/users/me", usersC.CurrentUser)
 
-	// Starts the server `views.Parse` returns a Template and an error. This fits the scope of views.Must
+	// Set middleware
+	csrfKey := "5YGEgDV0VAVTlV8wxfXdlCJSam82rvj1"
+	csrfMW := csrf.Protect(
+		[]byte(csrfKey),
+		csrf.Secure(false), // TODO: change false -> true for deployment
+	)
+
+	// Starts the server
 	fmt.Println("Starting the server on :3000...")
-	http.ListenAndServe(":3000", r)
+	http.ListenAndServe(":3000", csrfMW(r))
 }
