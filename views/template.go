@@ -23,7 +23,18 @@ func Must(t Template, err error) Template {
 
 // ParseFS parses the template located in the file system fs
 func ParseFS(fs fs.FS, patterns ...string) (Template, error) {
-	tpl, err := template.ParseFS(fs, patterns...)
+	// We need to define the template functions BEFORE the templates are parsed. To do that we first cresate an empty template with the name of the first pattern. Then, we add the desired function to it.
+	tpl := template.New(patterns[0])
+	tpl = tpl.Funcs(
+		template.FuncMap{
+			"csrfField": func() template.HTML {
+				return `<!-- TODO: Implement the csrfField -->`
+
+			},
+		},
+	)
+
+	tpl, err := tpl.ParseFS(fs, patterns...)
 	if err != nil {
 		return Template{}, fmt.Errorf("parsing template: %w", err)
 	}
@@ -32,17 +43,17 @@ func ParseFS(fs fs.FS, patterns ...string) (Template, error) {
 	return Template{HTMLTpl: tpl}, nil
 }
 
-// Parse parses the template located in the filepath
-func Parse(filepath string) (Template, error) {
-	// If there is an error parsing, it will be handled here (i.e. invalid function in the template)
-	tpl, err := template.ParseFiles(filepath)
-	if err != nil {
-		return Template{}, fmt.Errorf("parsing template: %w", err)
-	}
+// // Parse parses the template located in the filepath
+// func Parse(filepath string) (Template, error) {
+// 	// If there is an error parsing, it will be handled here (i.e. invalid function in the template)
+// 	tpl, err := template.ParseFiles(filepath)
+// 	if err != nil {
+// 		return Template{}, fmt.Errorf("parsing template: %w", err)
+// 	}
 
-	// If there is no error, then return
-	return Template{HTMLTpl: tpl}, nil
-}
+// 	// If there is no error, then return
+// 	return Template{HTMLTpl: tpl}, nil
+// }
 
 // Execute executes a template of type <Template> that is already parsed
 func (t Template) Execute(w http.ResponseWriter, data interface{}) {
