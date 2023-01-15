@@ -6,6 +6,8 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+
+	"github.com/gorilla/csrf"
 )
 
 // Custom template type that wraps around the native template type
@@ -23,7 +25,7 @@ func Must(t Template, err error) Template {
 
 // ParseFS parses the template located in the file system fs
 func ParseFS(fs fs.FS, patterns ...string) (Template, error) {
-	// We need to define the template functions BEFORE the templates are parsed. To do that we first cresate an empty template with the name of the first pattern. Then, we add the desired function to it.
+	// We need to define the template functions BEFORE the templates are parsed. To do that we first cresate an empty template with the name of the first pattern. Then, we add a *placeholder* function to it. This temporaty function will latter be rewritten when the templace is executed.
 	tpl := template.New(patterns[0])
 	tpl = tpl.Funcs(
 		template.FuncMap{
@@ -43,20 +45,26 @@ func ParseFS(fs fs.FS, patterns ...string) (Template, error) {
 	return Template{HTMLTpl: tpl}, nil
 }
 
-// // Parse parses the template located in the filepath
-// func Parse(filepath string) (Template, error) {
-// 	// If there is an error parsing, it will be handled here (i.e. invalid function in the template)
-// 	tpl, err := template.ParseFiles(filepath)
-// 	if err != nil {
-// 		return Template{}, fmt.Errorf("parsing template: %w", err)
-// 	}
-
-// 	// If there is no error, then return
-// 	return Template{HTMLTpl: tpl}, nil
-// }
-
 // Execute executes a template of type <Template> that is already parsed
 func (t Template) Execute(w http.ResponseWriter, r *http.Request, data interface{}) {
+	// Clones the original template to avoid *race condition* where many users could be requesting from the same template at the same time
+	tpl, err := t.HTMLTpl.Clone()
+	if err != nil {
+		log.Printf("cloning template: %v", err)
+		http.Error(w, "There was an error rendering the page.", http.StatusInternalServerError)
+		return
+	}
+
+	// This function replaces the placeholder function from `ParseFS`
+	tpl = tpl.Funcs(
+		template.FuncMap{
+			"csrfField": func() template.HTML {
+				return csrf.TemplateField(r)
+
+			},
+		},
+	)
+
 	// Sets the content type of the response header
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
@@ -64,7 +72,7 @@ func (t Template) Execute(w http.ResponseWriter, r *http.Request, data interface
 	// If there is an error rendering, it will be handled here (i.e. invalid field in the template)
 	// This approach writes to the response writer until an error is detected (if any). If an error
 	// is detected half-way through the execution, then the webpage will be half rendered
-	err := t.HTMLTpl.Execute(w, data)
+	err = tpl.Execute(w, data)
 	if err != nil {
 		log.Printf("executing templates: %v", err)
 		http.Error(w, "There was an error executing the template.", http.StatusInternalServerError)
