@@ -53,6 +53,7 @@ func main() {
 	r.Post("/users", usersC.Create)
 	r.Get("/signin", usersC.SignIn)
 	r.Post("/signin", usersC.ProcessSignIn)
+	r.Get("/users/me", usersC.CurrentUser)
 
 	// Starts the server `views.Parse` returns a Template and an error. This fits the scope of views.Must
 	fmt.Println("Starting the server on :3000...")
