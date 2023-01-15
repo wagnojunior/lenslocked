@@ -71,5 +71,14 @@ func (u Users) ProcessSignIn(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Something went wrong", http.StatusInternalServerError)
 		return
 	}
+
+	// Proper location to set cookies is after authentication and before writing to the response writer
+	cookie := http.Cookie{
+		Name:  "email",    // name of the cookie
+		Value: user.Email, // value being stored
+		Path:  "/",        // which paths on the server have access to this cookie
+	}
+	http.SetCookie(w, &cookie)
+
 	fmt.Fprintf(w, "User authenticated: %+v", user)
 }
