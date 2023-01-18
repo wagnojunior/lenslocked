@@ -23,6 +23,7 @@ func String(n int) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("String: %w", err)
 	}
+
 	return base64.URLEncoding.EncodeToString(b), nil
 }
 
