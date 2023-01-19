@@ -8,7 +8,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// User defines the user model
+// User defines the user model according to the `users` SQL table
 type User struct {
 	ID           int
 	Email        string
