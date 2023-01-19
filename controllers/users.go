@@ -53,13 +53,7 @@ func (u Users) Create(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/signin", http.StatusFound)
 		return
 	}
-	cookie := http.Cookie{
-		Name:     "session",
-		Value:    session.Token,
-		Path:     "/",
-		HttpOnly: true,
-	}
-	http.SetCookie(w, &cookie)
+	setCookie(w, CookieSession, session.Token)
 	http.Redirect(w, r, "/users/me", http.StatusFound)
 
 	fmt.Fprintf(w, "User created: %+v", user)
@@ -98,13 +92,7 @@ func (u Users) ProcessSignIn(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Something went wrong", http.StatusInternalServerError)
 		return
 	}
-	cookie := http.Cookie{
-		Name:     "session",     // name of the cookie
-		Value:    session.Token, // value being stored
-		Path:     "/",           // which paths on the server have access to this cookie
-		HttpOnly: true,          // cookie not accessible via javascript
-	}
-	http.SetCookie(w, &cookie)
+	setCookie(w, CookieSession, session.Token)
 	http.Redirect(w, r, "/users/me", http.StatusFound)
 
 	fmt.Fprintf(w, "User authenticated: %+v", user)
@@ -112,14 +100,14 @@ func (u Users) ProcessSignIn(w http.ResponseWriter, r *http.Request) {
 
 // CurrentUser retrieves the session cookie from the http request and uses it to authenticate the user. In case of error, redirect to the signin page
 func (u Users) CurrentUser(w http.ResponseWriter, r *http.Request) {
-	tokenCookie, err := r.Cookie("session")
+	token, err := readCookie(r, CookieSession)
 	if err != nil {
 		fmt.Println(err)
 		http.Redirect(w, r, "/signin", http.StatusFound)
 		return
 	}
 
-	user, err := u.SessionService.User(tokenCookie.Value)
+	user, err := u.SessionService.User(token)
 	if err != nil {
 		fmt.Println(err)
 		http.Redirect(w, r, "/signin", http.StatusFound)
