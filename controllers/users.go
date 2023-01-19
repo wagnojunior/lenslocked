@@ -13,7 +13,8 @@ type Users struct {
 		New    Template
 		SignIn Template
 	}
-	UserService *models.UserService
+	UserService    *models.UserService
+	SessionService *models.SessionService
 }
 
 // New executes the template `New` that is stored in `u.Templates`
@@ -41,7 +42,25 @@ func (u Users) Create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println(err)
 		http.Error(w, "Something went wrong", http.StatusInternalServerError)
+		return
 	}
+
+	// Creates a session after creating an user, since it is unecessary to ask a user to login immediately after they have signed up
+	session, err := u.SessionService.Create(user.ID)
+	if err != nil {
+		// TODO: long term-> show a warning about not being able to sign in
+		fmt.Println(err)
+		http.Redirect(w, r, "/signin", http.StatusFound)
+		return
+	}
+	cookie := http.Cookie{
+		Name:     "session",
+		Value:    session.Token,
+		Path:     "/",
+		HttpOnly: true,
+	}
+	http.SetCookie(w, &cookie)
+	http.Redirect(w, r, "/users/me", http.StatusFound)
 
 	fmt.Fprintf(w, "User created: %+v", user)
 }
@@ -73,23 +92,39 @@ func (u Users) ProcessSignIn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Proper location to set cookies is after authentication and before writing to the response writer
+	session, err := u.SessionService.Create(user.ID)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "Something went wrong", http.StatusInternalServerError)
+		return
+	}
 	cookie := http.Cookie{
-		Name:     "email",    // name of the cookie
-		Value:    user.Email, // value being stored
-		Path:     "/",        // which paths on the server have access to this cookie
-		HttpOnly: true,       // cookie not accessible via javascript
+		Name:     "session",     // name of the cookie
+		Value:    session.Token, // value being stored
+		Path:     "/",           // which paths on the server have access to this cookie
+		HttpOnly: true,          // cookie not accessible via javascript
 	}
 	http.SetCookie(w, &cookie)
+	http.Redirect(w, r, "/users/me", http.StatusFound)
 
 	fmt.Fprintf(w, "User authenticated: %+v", user)
 }
 
-// CurrentUser retrieves the value of the cookie `email` for the current user
+// CurrentUser retrieves the session cookie from the http request and uses it to authenticate the user. In case of error, redirect to the signin page
 func (u Users) CurrentUser(w http.ResponseWriter, r *http.Request) {
-	email, err := r.Cookie("email")
+	tokenCookie, err := r.Cookie("session")
 	if err != nil {
-		fmt.Fprint(w, "The email cookie could not be read.")
+		fmt.Println(err)
+		http.Redirect(w, r, "/signin", http.StatusFound)
 		return
 	}
-	fmt.Fprintf(w, "Email cookie: %s\n", email.Value)
+
+	user, err := u.SessionService.User(tokenCookie.Value)
+	if err != nil {
+		fmt.Println(err)
+		http.Redirect(w, r, "/signin", http.StatusFound)
+		return
+	}
+
+	fmt.Fprintf(w, "Current user: %s\n", user.Email)
 }
