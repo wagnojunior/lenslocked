@@ -26,10 +26,3 @@ func String(n int) (string, error) {
 
 	return base64.URLEncoding.EncodeToString(b), nil
 }
-
-const SessionTokenBytes = 32
-
-// SessionToken returns a random string of size 32 and and error using the crypto/rand package
-func SessionToken() (string, error) {
-	return String(SessionTokenBytes)
-}
