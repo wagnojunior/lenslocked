@@ -51,12 +51,20 @@ func (ss *SessionService) Create(userID int) (*Session, error) {
 		TokenHash: tokenHash,
 	}
 
-	// TODO: store the session in DB
+	// Tries to update a user's session or creates a new session in case the user does not have one
 	row := ss.DB.QueryRow(`
-		INSERT INTO sessions (user_id, token_hash)
-		VALUES ($1, $2)
+		UPDATE sessions
+		SET token_hash = $2
+		WHERE user_id = $1
 		RETURNING id;`, session.UserID, session.TokenHash)
 	err = row.Scan(&session.ID)
+	if err == sql.ErrNoRows {
+		row = ss.DB.QueryRow(`
+			INSERT INTO sessions (user_id, token_hash)
+			VALUES ($1, $2)
+			RETURNING id;`, session.UserID, session.TokenHash)
+		err = row.Scan(&session.ID)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("create: %w", err)
 	}
