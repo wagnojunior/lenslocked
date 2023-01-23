@@ -1,0 +1,18 @@
+{{template "header" .}}
+<div class="flex flex-col min-h-screen">
+    <div class="px-6 py-6">
+        <div>
+            <h1>Hello there, {{.Email}}</h1>
+        </div>
+        <div>
+            <form action="/signout" method="post">
+                <div class="hidden">
+                    {{csrfField}}
+                </div>
+                <br>
+                <button class="h-10 w-full text-white bg-blue-700 hover:bg-blue-500 rounded" type="submit">Sign Out</button>
+            </form>
+        </div>  
+    </div>
+</div>
+{{template "footer" .}}

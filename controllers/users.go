@@ -10,8 +10,9 @@ import (
 // Type Users holds a template struct that stores all the templates needed to render different pages
 type Users struct {
 	Templates struct {
-		New    Template
-		SignIn Template
+		New     Template
+		SignIn  Template
+		SignOut Template
 	}
 	UserService    *models.UserService
 	SessionService *models.SessionService
@@ -114,7 +115,13 @@ func (u Users) CurrentUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "Current user: %s\n", user.Email)
+	// Sets data to be passed to the template
+	var data struct {
+		Email string
+	}
+	data.Email = user.Email
+
+	u.Templates.SignOut.Execute(w, r, data)
 }
 
 func (u Users) ProcessSignOut(w http.ResponseWriter, r *http.Request) {
