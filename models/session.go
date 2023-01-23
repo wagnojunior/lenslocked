@@ -22,6 +22,7 @@ type Session struct {
 	TokenHash string
 }
 
+// SessionService defines the connection to the DB
 type SessionService struct {
 	DB *sql.DB
 	// BytesPerToken determines how many bytes used to generate each session token. If `BytesPerToken` is not provided or is less than `MinBytesPerToken`, then `MinBytesPerToken` is used instead
@@ -70,6 +71,20 @@ func (ss *SessionService) Create(userID int) (*Session, error) {
 	}
 
 	return &session, nil
+}
+
+// Delete deletes a session defined by the token stored in the cookie
+func (ss *SessionService) Delete(token string) error {
+	tokenHash := ss.hash(token)
+
+	_, err := ss.DB.Exec(`
+		DELETE FROM sessions
+		WHERE token_hash = $1;`, tokenHash)
+	if err != nil {
+		return fmt.Errorf("delete: %w", err)
+	}
+
+	return nil
 }
 
 // User returns an user for a given session token
