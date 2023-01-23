@@ -29,22 +29,39 @@ type SessionService struct {
 	BytesPerToken int
 }
 
-// Create creates a session
-func (ss *SessionService) Create(userID int) (*Session, error) {
+type TokenManager struct {
+	sessionService *SessionService
+}
+
+func (tm TokenManager) New() (token, tokenHash string, err error) {
 	// Checks if the given bytes per token meets the minimum requirement
-	bytesPerToken := ss.BytesPerToken
+	bytesPerToken := tm.sessionService.BytesPerToken
 	if bytesPerToken < MinBytesPerToken {
 		bytesPerToken = MinBytesPerToken
 	}
 
 	// Generates a session token using the specified `bytesPerToken`
-	token, err := rand.String(bytesPerToken)
+	token, err = rand.String(bytesPerToken)
 	if err != nil {
-		return nil, fmt.Errorf("create: %w", err)
+		return "", "", fmt.Errorf("create: %w", err)
 	}
 
 	// Hashes the session token
-	tokenHash := ss.hash(token)
+	tokenHash = tm.sessionService.hash(token)
+
+	return token, tokenHash, nil
+}
+
+// Create creates a session
+func (ss *SessionService) Create(userID int) (*Session, error) {
+	tm := TokenManager{
+		sessionService: ss,
+	}
+
+	token, tokenHash, err := tm.New()
+	if err != nil {
+		return nil, fmt.Errorf("create: %w", err)
+	}
 
 	session := Session{
 		UserID:    userID,
