@@ -1,5 +1,6 @@
 # docker exec -it lenslocked-db-1 /usr/bin/psql -U baloo -d lenslocked
 # docker compose exec -it db psql -U baloo -d lenslocked
+# host=localhost port=5432 user=baloo password=junglebook dbname=lenslocked sslmode=disable
 
 version: "3.9"
 
