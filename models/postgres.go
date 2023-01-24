@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"fmt"
+	"io/fs"
 
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/pressly/goose/v3"
@@ -60,4 +61,19 @@ func Migrate(db *sql.DB, dir string) error {
 	}
 
 	return nil
+}
+
+// MigrateFS sets the base filesystem of the migrations and undoes any changes after every action is completed. This ensures that the migration files are embedded into the binnary and are, therefore, always available
+func MigrateFS(db *sql.DB, migrationsFS fs.FS, dir string) error {
+	// Prevent any directory error
+	if dir == "" {
+		dir = "."
+	}
+
+	goose.SetBaseFS(migrationsFS)
+	defer func() {
+		goose.SetBaseFS(nil)
+	}()
+
+	return Migrate(db, dir)
 }
