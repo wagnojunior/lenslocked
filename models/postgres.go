@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	_ "github.com/jackc/pgx/v4/stdlib"
+	"github.com/pressly/goose/v3"
 )
 
 // PostgresConfig defines the Postgres config structure
@@ -43,4 +44,20 @@ func Open(config PostgresConfig) (*sql.DB, error) {
 	}
 
 	return db, nil
+}
+
+// Migrate runs the Goose migrations located at `dir` in the DB object `db`
+func Migrate(db *sql.DB, dir string) error {
+	// Sets the goose dialect to postgres
+	err := goose.SetDialect("postgres")
+	if err != nil {
+		return fmt.Errorf("migrate: %w", err)
+	}
+
+	err = goose.Up(db, dir)
+	if err != nil {
+		return fmt.Errorf("migrate: %w", err)
+	}
+
+	return nil
 }
