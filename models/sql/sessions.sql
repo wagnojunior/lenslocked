@@ -1,9 +1,6 @@
 CREATE TABLE sessions (
     id SERIAL PRIMARY KEY,
     user_id INT UNIQUE,
-    token_hash TEXT UNIQUE NOT NULL
+    token_hash TEXT UNIQUE NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users (id) 
 );
-
-INSERT INTO sessions (user_id, token_hash)
-VALUES ($1, $2)
-RETURNING id;
