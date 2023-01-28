@@ -73,7 +73,12 @@ func main() {
 	r.Post("/signout", usersC.ProcessSignOut)
 	r.Get("/users/me", usersC.CurrentUser)
 
-	// Set middleware
+	// Creates an instance of the UserMiddleware
+	umw := controllers.UserMiddleware{
+		SessionService: &sessionService,
+	}
+
+	// Sets middleware
 	csrfKey := "5YGEgDV0VAVTlV8wxfXdlCJSam82rvj1"
 	csrfMW := csrf.Protect(
 		[]byte(csrfKey),
@@ -82,5 +87,5 @@ func main() {
 
 	// Starts the server
 	fmt.Println("Starting the server on :3000...")
-	http.ListenAndServe(":3000", csrfMW(r))
+	http.ListenAndServe(":3000", csrfMW(umw.SetUser(r)))
 }
