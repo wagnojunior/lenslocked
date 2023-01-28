@@ -109,29 +109,13 @@ func (u Users) CurrentUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "Current user: %s\n", user.Email)
+	// Sets data to be passed to the template
+	var data struct {
+		Email string
+	}
+	data.Email = user.Email
 
-	// token, err := readCookie(r, CookieSession)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	http.Redirect(w, r, "/signin", http.StatusFound)
-	// 	return
-	// }
-
-	// user, err := u.SessionService.User(token)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	http.Redirect(w, r, "/signin", http.StatusFound)
-	// 	return
-	// }
-
-	// // Sets data to be passed to the template
-	// var data struct {
-	// 	Email string
-	// }
-	// data.Email = user.Email
-
-	// u.Templates.SignOut.Execute(w, r, data)
+	u.Templates.SignOut.Execute(w, r, data)
 }
 
 func (u Users) ProcessSignOut(w http.ResponseWriter, r *http.Request) {
@@ -151,4 +135,33 @@ func (u Users) ProcessSignOut(w http.ResponseWriter, r *http.Request) {
 
 	deleteCookie(w, CookieSession)
 	http.Redirect(w, r, "/signin", http.StatusFound)
+}
+
+// UserMiddleware defines a new type to handle the user middleware
+type UserMiddleware struct {
+	SessionService *models.SessionService
+}
+
+// SetUser looks up a token session from the cookie session, retrieves the user associated with this token, and sets this user to the current request
+func (umw UserMiddleware) SetUser(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		token, err := readCookie(r, CookieSession)
+		if err != nil {
+			next.ServeHTTP(w, r) // proceed with the request assuming the user is not logged in
+			return
+		}
+
+		user, err := umw.SessionService.User(token)
+		if err != nil {
+			next.ServeHTTP(w, r) // proceed with the request assuming the user is not logged in
+			return
+		}
+
+		// Gets the context from the request, overwrites the context with the user, and updates the request with the context
+		ctx := r.Context()
+		ctx = context.WithUser(ctx, user)
+		r = r.WithContext(ctx)
+
+		next.ServeHTTP(w, r)
+	})
 }
