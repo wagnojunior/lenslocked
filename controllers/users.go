@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/wagnojunior/lenslocked/context"
 	"github.com/wagnojunior/lenslocked/models"
 )
 
@@ -101,27 +102,36 @@ func (u Users) ProcessSignIn(w http.ResponseWriter, r *http.Request) {
 
 // CurrentUser retrieves the session cookie from the http request and uses it to authenticate the user. In case of error, redirect to the signin page
 func (u Users) CurrentUser(w http.ResponseWriter, r *http.Request) {
-	token, err := readCookie(r, CookieSession)
-	if err != nil {
-		fmt.Println(err)
+	// Gets the user from the context and checks if it is valid. Redirects to the signin page in case the user is not valid
+	user := context.User(r.Context())
+	if user == nil {
 		http.Redirect(w, r, "/signin", http.StatusFound)
 		return
 	}
 
-	user, err := u.SessionService.User(token)
-	if err != nil {
-		fmt.Println(err)
-		http.Redirect(w, r, "/signin", http.StatusFound)
-		return
-	}
+	fmt.Fprintf(w, "Current user: %s\n", user.Email)
 
-	// Sets data to be passed to the template
-	var data struct {
-		Email string
-	}
-	data.Email = user.Email
+	// token, err := readCookie(r, CookieSession)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	http.Redirect(w, r, "/signin", http.StatusFound)
+	// 	return
+	// }
 
-	u.Templates.SignOut.Execute(w, r, data)
+	// user, err := u.SessionService.User(token)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	http.Redirect(w, r, "/signin", http.StatusFound)
+	// 	return
+	// }
+
+	// // Sets data to be passed to the template
+	// var data struct {
+	// 	Email string
+	// }
+	// data.Email = user.Email
+
+	// u.Templates.SignOut.Execute(w, r, data)
 }
 
 func (u Users) ProcessSignOut(w http.ResponseWriter, r *http.Request) {
