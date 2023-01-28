@@ -10,6 +10,8 @@ import (
 	"net/http"
 
 	"github.com/gorilla/csrf"
+	"github.com/wagnojunior/lenslocked/context"
+	"github.com/wagnojunior/lenslocked/models"
 )
 
 // Custom template type that wraps around the native template type
@@ -27,12 +29,16 @@ func Must(t Template, err error) Template {
 
 // ParseFS parses the template located in the file system fs
 func ParseFS(fs fs.FS, patterns ...string) (Template, error) {
-	// We need to define the template functions BEFORE the templates are parsed. To do that we first cresate an empty template with the name of the first pattern. Then, we add a *placeholder* function to it. This temporaty function will latter be rewritten when the templace is executed.
+	// We need to define the template functions BEFORE the templates are parsed. To do that we first create an empty template with the name of the first pattern. Then, we add a *placeholder* function to it. This temporaty function will latter be rewritten when the templace is executed.
 	tpl := template.New(patterns[0])
 	tpl = tpl.Funcs(
 		template.FuncMap{
 			"csrfField": func() (template.HTML, error) {
 				return "", fmt.Errorf("scrfField not implemented")
+
+			},
+			"currentUser": func() (template.HTML, error) {
+				return "", fmt.Errorf("currentUser not implemented")
 
 			},
 		},
@@ -62,6 +68,10 @@ func (t Template) Execute(w http.ResponseWriter, r *http.Request, data interface
 		template.FuncMap{
 			"csrfField": func() template.HTML {
 				return csrf.TemplateField(r)
+
+			},
+			"currentUser": func() *models.User {
+				return context.User(r.Context())
 
 			},
 		},
