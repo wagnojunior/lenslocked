@@ -1,27 +1,22 @@
 package main
 
 import (
-	"context"
+	std_context "context"
 	"fmt"
-)
 
-type ctxKey string
-
-const (
-	favoriteColorKey ctxKey = "favorite-color"
+	"github.com/wagnojunior/lenslocked/context"
+	"github.com/wagnojunior/lenslocked/models"
 )
 
 func main() {
-	ctx := context.Background()
+	ctx := std_context.Background()
 
-	ctx = context.WithValue(ctx, favoriteColorKey, "blue")
-	value := ctx.Value(favoriteColorKey)
-	strValue, ok := value.(int)
-	if !ok {
-		fmt.Println("Cannot asset to the desired type")
-		return
+	user := models.User{
+		Email: "test@test.com",
 	}
 
-	fmt.Println(strValue)
-	// fmt.Println(strings.HasPrefix(strValue, "b"))
+	ctx = context.WithUser(ctx, &user)
+
+	retrievedUser := context.User(ctx)
+	fmt.Println(retrievedUser.Email)
 }
