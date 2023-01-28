@@ -14,21 +14,6 @@ import (
 )
 
 func main() {
-	// Creates a new chi router
-	r := chi.NewRouter()
-
-	// Parses the home templates before the server starts. `views.ParseFS` returns a Template and an error. This fits the scope of `views.Must`
-	tpl := views.Must(views.ParseFS(templates.FS, "home.gohtml", "tailwind.gohtml"))
-	r.Get("/", controllers.StaticHandler(tpl))
-
-	// Parses the contact templates before the server starts. `views.ParseFS` returns a Template and an error. This fits the scope of views.Must
-	tpl = views.Must(views.ParseFS(templates.FS, "contact.gohtml", "tailwind.gohtml"))
-	r.Get("/contact", controllers.StaticHandler(tpl))
-
-	// Parses the faq templates before the server starts. `views.ParseFS` returns a Template and an error. This fits the scope of views.Must
-	tpl = views.Must(views.ParseFS(templates.FS, "faq.gohtml", "tailwind.gohtml"))
-	r.Get("/faq", controllers.FAQ(tpl))
-
 	// Creates a connection to the DB
 	cfg := models.DefaultPostgresConfig()
 	db, err := models.Open(cfg)
@@ -53,6 +38,18 @@ func main() {
 		DB: db,
 	}
 
+	// Creates an instance of the UserMiddleware
+	umw := controllers.UserMiddleware{
+		SessionService: &sessionService,
+	}
+
+	// Sets middleware
+	csrfKey := "5YGEgDV0VAVTlV8wxfXdlCJSam82rvj1"
+	csrfMW := csrf.Protect(
+		[]byte(csrfKey),
+		csrf.Secure(false), // TODO: change false -> true for deployment
+	)
+
 	// Initializes the controller for the users `usersC`. This controller receives the template that is parsed by `views.ParseFS`. `usersC.New` is of type HandlerFunc, therefore it can be passed to `r.Get`. In here, `usersC.New` is passed as a type function, therefore no need to pass in the arguments.
 	usersC := controllers.Users{
 		UserService:    &userService,
@@ -66,24 +63,21 @@ func main() {
 	usersC.Templates.SignOut = views.Must(views.ParseFS(
 		templates.FS, "me.gohtml", "tailwind.gohtml"))
 
+	// Creates a new chi router
+	r := chi.NewRouter()
+
+	r.Get("/", controllers.StaticHandler(
+		views.Must(views.ParseFS(templates.FS, "home.gohtml", "tailwind.gohtml"))))
+	r.Get("/contact", controllers.StaticHandler(
+		views.Must(views.ParseFS(templates.FS, "contact.gohtml", "tailwind.gohtml"))))
+	r.Get("/faq", controllers.FAQ(views.Must(
+		views.ParseFS(templates.FS, "faq.gohtml", "tailwind.gohtml"))))
 	r.Get("/signup", usersC.New)
 	r.Post("/users", usersC.Create)
 	r.Get("/signin", usersC.SignIn)
 	r.Post("/signin", usersC.ProcessSignIn)
 	r.Post("/signout", usersC.ProcessSignOut)
 	r.Get("/users/me", usersC.CurrentUser)
-
-	// Creates an instance of the UserMiddleware
-	umw := controllers.UserMiddleware{
-		SessionService: &sessionService,
-	}
-
-	// Sets middleware
-	csrfKey := "5YGEgDV0VAVTlV8wxfXdlCJSam82rvj1"
-	csrfMW := csrf.Protect(
-		[]byte(csrfKey),
-		csrf.Secure(false), // TODO: change false -> true for deployment
-	)
 
 	// Starts the server
 	fmt.Println("Starting the server on :3000...")
