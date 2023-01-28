@@ -63,8 +63,10 @@ func main() {
 	usersC.Templates.SignOut = views.Must(views.ParseFS(
 		templates.FS, "me.gohtml", "tailwind.gohtml"))
 
-	// Creates a new chi router
+	// Creates a new chi router and applies the different middlewares
 	r := chi.NewRouter()
+	r.Use(csrfMW)
+	r.Use(umw.SetUser)
 
 	r.Get("/", controllers.StaticHandler(
 		views.Must(views.ParseFS(templates.FS, "home.gohtml", "tailwind.gohtml"))))
@@ -77,9 +79,12 @@ func main() {
 	r.Get("/signin", usersC.SignIn)
 	r.Post("/signin", usersC.ProcessSignIn)
 	r.Post("/signout", usersC.ProcessSignOut)
-	r.Get("/users/me", usersC.CurrentUser)
+	r.Route("/users/me", func(r chi.Router) {
+		r.Use(umw.RequireUser)
+		r.Get("/", usersC.CurrentUser)
+	})
 
 	// Starts the server
 	fmt.Println("Starting the server on :3000...")
-	http.ListenAndServe(":3000", csrfMW(umw.SetUser(r)))
+	http.ListenAndServe(":3000", r)
 }
