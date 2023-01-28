@@ -100,14 +100,9 @@ func (u Users) ProcessSignIn(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "User authenticated: %+v", user)
 }
 
-// CurrentUser retrieves the session cookie from the http request and uses it to authenticate the user. In case of error, redirect to the signin page
+// CurrentUser retrieves the user from the context
 func (u Users) CurrentUser(w http.ResponseWriter, r *http.Request) {
-	// Gets the user from the context and checks if it is valid. Redirects to the signin page in case the user is not valid
 	user := context.User(r.Context())
-	if user == nil {
-		http.Redirect(w, r, "/signin", http.StatusFound)
-		return
-	}
 
 	// Sets data to be passed to the template
 	var data struct {
@@ -161,6 +156,19 @@ func (umw UserMiddleware) SetUser(next http.Handler) http.Handler {
 		ctx := r.Context()
 		ctx = context.WithUser(ctx, user)
 		r = r.WithContext(ctx)
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+// RequireUser checks if an user is signed in and redirects to the signin page if it ins't
+func (umw UserMiddleware) RequireUser(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user := context.User(r.Context())
+		if user == nil {
+			http.Redirect(w, r, "/signin", http.StatusFound)
+			return
+		}
 
 		next.ServeHTTP(w, r)
 	})
