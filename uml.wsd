@@ -1,0 +1,15 @@
+@startuml
+
+    namespace models {
+        class User {
+            + ID int
+            + Email string
+            + PasswordHash string
+        }
+        class UserService {
+            + DB *sql.DB
+            + Create(email, password string) (*User, error)
+        }
+    }
+
+@enduml
