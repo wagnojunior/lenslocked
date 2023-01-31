@@ -1,15 +1,148 @@
 @startuml
 
-    namespace models {
-        class User {
-            + ID int
-            + Email string
-            + PasswordHash string
-        }
-        class UserService {
-            + DB *sql.DB
-            + Create(email, password string) (*User, error)
-        }
+namespace models {
+    class PostgresConfig << (S,Aquamarine) >> {
+        + Host string
+        + Port string
+        + User string
+        + Password string
+        + Database string
+        + SSLMode string
+
+        + (cfg PostgresConfig) String() string
+        + DefaultPostgresConfig() PostgresConfig
+        + Open(config PostgresConfig) (*sql.DB, error)
+        + Migrate(db *sql.DB, dir string) error
+        + MigrateFS(db *sql.DB, migrationsFS fs.FS, dir string) error
     }
+    class Session << (S,Aquamarine) >> {
+        + ID int
+        + UserID int
+        + Token string
+        + TokenHash string
+
+    }
+    class SessionService << (S,Aquamarine) >> {
+        + DB *sql.DB
+        + BytesPerToken int
+
+        - (ss *SessionService) hash(token string) string
+
+        + (ss *SessionService) Create(userID int) (*Session, error)
+        + (ss *SessionService) Delete(token string) error
+        + (ss *SessionService) User(token string) (*User, error)
+
+    }
+    class TokenManager << (S,Aquamarine) >> {
+        - sessionService *SessionService
+
+        + (tm TokenManager) New() (token, tokenHash string, err error)
+
+    }
+    class User << (S,Aquamarine) >> {
+        + ID int
+        + Email string
+        + PasswordHash string
+
+    }
+    class UserService << (S,Aquamarine) >> {
+        + DB *sql.DB
+
+        + (us *UserService) Create(email, password string) (*User, error)
+        + (us *UserService) Authenticate(email, password string) (*User, error)
+    }
+
+    TokenManager --o SessionService : uses
+
+}
+
+namespace context {
+    class Users << (F,Aquamarine) >>  {
+        + WithUser(ctx context.Context, user *models.User) context.Context
+        + User(ctx context.Context) *models.User
+    }
+}
+
+namespace controllers {
+    class Cookies << (S,Aquamarine) >> {
+        + newCookie(name, value string) *http.Cookie
+        + setCookie(w http.ResponseWriter, name, value string)
+        + readCookie(r *http.Request, name string) (string, error)
+        + deleteCookie(w http.ResponseWriter, name string)
+    }
+    class Static << (S,Aquamarine) >> {
+        + StaticHandler(tpl Template) http.HandlerFunc
+        + FAQ(tpl Template) http.HandlerFunc
+    }
+    interface Template {
+        + Execute(w http.ResponseWriter, r *http.Request, data interface{})
+    }
+    class Users << (S,Aquamarine) >> {
+        + Templates struct
+        + UserService *models.UserService
+	    + SessionService *models.SessionService
+
+        + (u Users) New(w http.ResponseWriter, r *http.Request)
+        + (u Users) Create(w http.ResponseWriter, r *http.Request)
+        + (u Users) SignIn(w http.ResponseWriter, r *http.Request)
+        + (u Users) ProcessSignIn(w http.ResponseWriter, r *http.Request)
+        + (u Users) CurrentUser(w http.ResponseWriter, r *http.Request)
+        + (u Users) ProcessSignOut(w http.ResponseWriter, r *http.Request)
+    }
+    class Templates << (S,Aquamarine) >> {
+        + New Template
+		+ SignIn Template
+		+ SignOut Template
+    }
+    class UserMiddleware << (S,Aquamarine) >>  {
+        + SessionService *models.SessionService
+
+        + (umw UserMiddleware) SetUser(next http.Handler) http.Handler
+        + (umw UserMiddleware) RequireUser(next http.Handler) http.Handler
+    }
+
+    Templates --+ Template : implements
+    Users --o Templates : uses
+    Users --o models.UserService : uses
+    Users --o models.SessionService : uses
+    UserMiddleware --o models.SessionService : uses
+}
+
+namespace migrations {
+    class migrations << (M,Aquamarine) >>  {       
+        - users()
+        - sessions()
+    }
+}
+
+namespace rand {
+    class rand << (F,Aquamarine) >>  {       
+        + Bytes(n int) ([]byte, error)
+        + String(n int) (string, error)
+    }
+}
+
+namespace templates {
+    class templates << (F,Aquamarine) >>  {       
+        + {static} contact.gohtml
+        + {static} faq.gohtml
+        + {static} home.gohtml
+        + {static} me.gohtml
+        + {static} signin.gohtml
+        + {static} signup.gohtml
+        + {static} tailwind.gohtml
+    }
+}
+
+namespace views {
+    class Template << (S,Aquamarine) >>{
+        + HTMLTpl *template.Template
+
+        + Must(t Template, err error) Template
+        + ParseFS(fs fs.FS, patterns ...string) (Template, error)
+        + (t Template) Execute(w http.ResponseWriter, r *http.Request, data interface{})
+        
+    }
+}
 
 @enduml
