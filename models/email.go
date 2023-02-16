@@ -1,6 +1,10 @@
 package models
 
-import "github.com/go-mail/mail/v2"
+import (
+	"fmt"
+
+	"github.com/go-mail/mail/v2"
+)
 
 const (
 	DefaultSender = "support@lenslocked.com"
@@ -32,4 +36,58 @@ func NewEmailService(config SMTPConfig) *EmailService {
 	}
 
 	return &sd
+}
+
+// Email defines a new type that holdes the relevant information of an email. This type wraps the
+// `mail.Message` type from the `mail` package so that users of this service do not have to worry
+// about third-party dependency
+type Email struct {
+	From      string
+	To        string
+	Subject   string
+	PlainText string
+	HTML      string
+}
+
+func (es *EmailService) Send(email Email) error {
+	msg := mail.NewMessage()
+	es.setFrom(msg, email)
+	msg.SetHeader("To", email.To)
+	msg.SetHeader("Subject", email.Subject)
+
+	// Sets the email bode depending on whether a plain text or HTML are passed. In case either is
+	// passed there is no need to add an alternative
+	switch {
+	case email.PlainText != "" && email.HTML != "":
+		msg.SetBody("text/plain", email.PlainText)
+		msg.AddAlternative("text/html", email.HTML)
+	case email.PlainText != "":
+		msg.SetBody("text/plain", email.PlainText)
+	case email.HTML != "":
+		msg.SetBody("text/hmtl", email.HTML)
+	}
+
+	err := es.dialer.DialAndSend(msg)
+	if err != nil {
+		return fmt.Errorf("error: %w", err)
+	}
+
+	return nil
+}
+
+func (es *EmailService) setFrom(msg *mail.Message, email Email) {
+	var from string
+	switch {
+	// In case the FROM field is specified, use it
+	case email.From != "":
+		from = email.From
+	// In case the FROM field is not specified and the email service's default sendere it, use it
+	case es.DefaultSender != "":
+		from = es.DefaultSender
+	// In case the FROM field is not specified, use the constant default sender
+	default:
+		from = DefaultSender
+	}
+
+	msg.SetHeader("From", from)
 }
