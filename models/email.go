@@ -49,6 +49,7 @@ type Email struct {
 	HTML      string
 }
 
+// Send sends an single email and returns an error, if any
 func (es *EmailService) Send(email Email) error {
 	msg := mail.NewMessage()
 	es.setFrom(msg, email)
@@ -67,6 +68,7 @@ func (es *EmailService) Send(email Email) error {
 		msg.SetBody("text/hmtl", email.HTML)
 	}
 
+	// Sends a single email
 	err := es.dialer.DialAndSend(msg)
 	if err != nil {
 		return fmt.Errorf("error: %w", err)
@@ -75,6 +77,24 @@ func (es *EmailService) Send(email Email) error {
 	return nil
 }
 
+// ForgotPassword sends a reset-password email to a user
+func (es *EmailService) ForgotPassword(to, resetURL string) error {
+	email := Email{
+		To:        to,
+		Subject:   "Reset your password",
+		PlainText: "To reset your password, please visit the following link:" + resetURL,
+		HTML:      `<p>To reset your password, please visit the following link: <a href="` + resetURL + `">` + resetURL + `</a></p>`,
+	}
+
+	err := es.Send(email)
+	if err != nil {
+		return fmt.Errorf("forgot password email: %w", err)
+	}
+
+	return nil
+}
+
+// setFrom sets the `from` field in an email.
 func (es *EmailService) setFrom(msg *mail.Message, email Email) {
 	var from string
 	switch {
