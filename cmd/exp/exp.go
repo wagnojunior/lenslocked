@@ -2,19 +2,25 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"strconv"
 
+	"github.com/joho/godotenv"
 	"github.com/wagnojunior/lenslocked/models"
 )
 
-// These constants are retrieved from the `MailTrap` website
-const (
-	host     = "sandbox.smtp.mailtrap.io"
-	port     = 587
-	username = "540b454aea2b6e"
-	password = "0df11b87e2f0fd"
-)
-
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("error loading .env file")
+	}
+
+	host := os.Getenv("SMPT_HOST")
+	portStr := os.Getenv("SMPT_PORT")
+	port, err := strconv.Atoi(portStr)
+	username := os.Getenv("SMPT_USERNAME")
+	password := os.Getenv("SMPT_PASSWORD")
 	es := models.NewEmailService(models.SMTPConfig{
 		Host:     host,
 		Port:     port,
@@ -22,7 +28,7 @@ func main() {
 		Password: password,
 	})
 
-	err := es.ForgotPassword("wagnojunior@gmail.com", "http://some-URL-like-this")
+	err = es.ForgotPassword("wagnojunior@gmail.com", "http://some-URL-like-this")
 	if err != nil {
 		panic(err)
 	}
