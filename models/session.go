@@ -14,7 +14,9 @@ const (
 	MinBytesPerToken = 32
 )
 
-// Session defines the session model according to the `sessions` SQL table. Although this struct should map to the SQL table, some entires (such as `Token`) are not present in the DB
+// Session defines the session model according to the `sessions` SQL table.
+// Although this struct should map to the SQL table, some entires (such as
+// `Token`) are not present in the DB
 type Session struct {
 	ID        int
 	UserID    int
