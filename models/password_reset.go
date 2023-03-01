@@ -33,7 +33,7 @@ type PasswordResetService struct {
 	Duration time.Duration
 }
 
-// Create creates a new password reset token
+// Create creates a new `PasswordReset` type
 func (prs *PasswordResetService) Create(email string) (*PasswordReset, error) {
 	return nil, fmt.Errorf("TODO: implement PasswordResetService.Create")
 }
