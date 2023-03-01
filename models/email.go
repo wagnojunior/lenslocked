@@ -10,8 +10,8 @@ const (
 	DefaultSender = "support@lenslocked.com"
 )
 
-// SMTPConfig defines a new type to hold the SMTP configuration. These credentials are provided by
-// the SMTP provider (i.e.: mailtrap)
+// SMTPConfig defines a new type to hold the SMTP configuration. These
+// credentials are provided by the SMTP provider (i.e.: mailtrap)
 type SMTPConfig struct {
 	Host     string
 	Port     int
@@ -19,17 +19,20 @@ type SMTPConfig struct {
 	Password string
 }
 
-// EmailService defines a new type to hold the EmailService configuration, specially the dialer.
+// EmailService defines a new type to hold the EmailService configuration,
+// specially the dialer.
 type EmailService struct {
-	// DefaultSender is used as the default sender when one isn't provided for an email. This is
-	// also used in functions where the email is a predetermined, like the forgotten password email
+	// DefaultSender is used as the default sender when one isn't provided for
+	// an email. This is also used in functions where the email is a
+	// predetermined, like the forgotten password email
 	DefaultSender string
 
 	// Unexported fields
 	dialer *mail.Dialer
 }
 
-// NewEmailService constructs a new email service with the provided SMTP configuration
+// NewEmailService constructs a new email service with the provided SMTP
+// configuration
 func NewEmailService(config SMTPConfig) *EmailService {
 	sd := EmailService{
 		dialer: mail.NewDialer(config.Host, config.Port, config.Username, config.Password),
@@ -38,9 +41,9 @@ func NewEmailService(config SMTPConfig) *EmailService {
 	return &sd
 }
 
-// Email defines a new type that holdes the relevant information of an email. This type wraps the
-// `mail.Message` type from the `mail` package so that users of this service do not have to worry
-// about third-party dependency
+// Email defines a new type that holdes the relevant information of an email.
+// This type wraps the `mail.Message` type from the `mail` package so that
+// users of this service do not have to worry about third-party dependency
 type Email struct {
 	From      string
 	To        string
@@ -56,8 +59,8 @@ func (es *EmailService) Send(email Email) error {
 	msg.SetHeader("To", email.To)
 	msg.SetHeader("Subject", email.Subject)
 
-	// Sets the email bode depending on whether a plain text or HTML are passed. In case either is
-	// passed there is no need to add an alternative
+	// Sets the email bode depending on whether a plain text or HTML are
+	// passed. In case either is passed there is no need to add an alternative
 	switch {
 	case email.PlainText != "" && email.HTML != "":
 		msg.SetBody("text/plain", email.PlainText)
@@ -101,7 +104,8 @@ func (es *EmailService) setFrom(msg *mail.Message, email Email) {
 	// In case the FROM field is specified, use it
 	case email.From != "":
 		from = email.From
-	// In case the FROM field is not specified and the email service's default sendere it, use it
+	// In case the FROM field is not specified and the email service's default
+	// sendere it, use it
 	case es.DefaultSender != "":
 		from = es.DefaultSender
 	// In case the FROM field is not specified, use the constant default sender
