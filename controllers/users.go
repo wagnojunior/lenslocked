@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 
 	"github.com/wagnojunior/lenslocked/context"
 	"github.com/wagnojunior/lenslocked/models"
@@ -11,12 +12,16 @@ import (
 // Type Users holds a template struct that stores all the templates needed to render different pages
 type Users struct {
 	Templates struct {
-		New     Template
-		SignIn  Template
-		SignOut Template
+		New            Template
+		SignIn         Template
+		SignOut        Template
+		ForgotPassword Template
+		CheckYourEmail Template
 	}
-	UserService    *models.UserService
-	SessionService *models.SessionService
+	UserService          *models.UserService
+	SessionService       *models.SessionService
+	PasswordResetService *models.PasswordResetService
+	EmailService         *models.EmailService
 }
 
 // New executes the template `New` that is stored in `u.Templates`
@@ -113,8 +118,11 @@ func (u Users) CurrentUser(w http.ResponseWriter, r *http.Request) {
 	u.Templates.SignOut.Execute(w, r, data)
 }
 
+// ProcessSignOut signs out a user, deletes the session from the DB, and
+// redirect the user to the sign in page
 func (u Users) ProcessSignOut(w http.ResponseWriter, r *http.Request) {
-	// Retrieve the session cookie and redirects to the signin page in case the session is not set
+	// Retrieve the session cookie and redirects to the signin page in case the
+	// session is not set
 	token, err := readCookie(r, CookieSession)
 	if err != nil {
 		http.Redirect(w, r, "/signin", http.StatusFound)
@@ -131,6 +139,54 @@ func (u Users) ProcessSignOut(w http.ResponseWriter, r *http.Request) {
 	deleteCookie(w, CookieSession)
 	http.Redirect(w, r, "/signin", http.StatusFound)
 }
+
+// ForgotPassword executes the template `ForgotPassword` stored in `u.Templates`
+func (u Users) ForgotPassword(w http.ResponseWriter, r *http.Request) {
+	var data struct {
+		Email string
+	}
+	data.Email = r.FormValue("email")
+	u.Templates.ForgotPassword.Execute(w, r, data)
+}
+
+func (u Users) ProcessForgotPassword(w http.ResponseWriter, r *http.Request) {
+	var data struct {
+		Email string
+	}
+	data.Email = r.FormValue("email")
+
+	// Create a new password reset token
+	pwReset, err := u.PasswordResetService.Create(data.Email)
+	if err != nil {
+		// TODO: handle other cases in the future.
+		// 1. user does not exists with a certain email address
+		fmt.Println(err)
+		http.Error(w, "something went wrong", http.StatusInternalServerError)
+		return
+	}
+
+	// Create the URL that is sent to the user. Since this application is not
+	// in production mode, the URL is hard coded. However, in the futere it
+	// will be associated with the user model
+	vals := url.Values{
+		"token": {pwReset.Token},
+	}
+	resetURL := "https://www.lenslocked.com/reset-pw?" + vals.Encode()
+	err = u.EmailService.ForgotPassword(data.Email, resetURL)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "something went wrong", http.StatusInternalServerError)
+		return
+	}
+
+	// Executes the `CheckYourEmail` template.
+	// NOTE: do not render the reset token here! We need the user to confirm
+	// access to the registered email to verify their email
+	u.Templates.CheckYourEmail.Execute(w, r, data)
+
+}
+
+///////////////////////////////////////////////////////////////////////////////
 
 // UserMiddleware defines a new type to handle the user middleware
 type UserMiddleware struct {
