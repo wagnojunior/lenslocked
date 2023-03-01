@@ -20,7 +20,6 @@ namespace models {
         + UserID int
         + Token string
         + TokenHash string
-
     }
     class SessionService << (S,Aquamarine) >> {
         + DB *sql.DB
@@ -31,19 +30,16 @@ namespace models {
         + (ss *SessionService) Create(userID int) (*Session, error)
         + (ss *SessionService) Delete(token string) error
         + (ss *SessionService) User(token string) (*User, error)
-
     }
     class TokenManager << (S,Aquamarine) >> {
         - sessionService *SessionService
 
         + (tm TokenManager) New() (token, tokenHash string, err error)
-
     }
     class User << (S,Aquamarine) >> {
         + ID int
         + Email string
         + PasswordHash string
-
     }
     class UserService << (S,Aquamarine) >> {
         + DB *sql.DB
@@ -51,8 +47,33 @@ namespace models {
         + (us *UserService) Create(email, password string) (*User, error)
         + (us *UserService) Authenticate(email, password string) (*User, error)
     }
+    class SMTPConfig << (S,Aquamarine) >> {
+        + Host string
+        + Port int
+        + Username string
+        + Password string
+    }
+    class EmailService << (S,Aquamarine) >> {
+        + DefaultSender string
+        - Dialer *mail.Dialer
+
+        + NewEmailService(config SMTPConfig) *EmailService
+        + (es *EmailService) Send(email Email) error
+        + (es *EmailService) ForgotPassword(to, resetURL string) error
+        + (es *EmailService) setFrom(msg *mail.Message, email Email)
+    }
+    class Email << (S,Aquamarine) >> {
+        + From string
+        + To string
+        + Subject string
+        + PlainText string
+        + HTML string
+    }
 
     TokenManager --o SessionService : uses
+    EmailService --o SMTPConfig : uses
+    EmailService --o Email : uses
+
 
 }
 
