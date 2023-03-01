@@ -22,7 +22,8 @@ func main() {
 	}
 	defer db.Close()
 
-	// Runs the migrations in the current directory of the filesystem (thus the ".")
+	// Runs the migrations in the current directory of the filesystem
+	// (thus the ".")
 	err = models.MigrateFS(db, migrations.FS, ".")
 	if err != nil {
 		panic(err)
@@ -50,7 +51,11 @@ func main() {
 		csrf.Secure(false), // TODO: change false -> true for deployment
 	)
 
-	// Initializes the controller for the users `usersC`. This controller receives the template that is parsed by `views.ParseFS`. `usersC.New` is of type HandlerFunc, therefore it can be passed to `r.Get`. In here, `usersC.New` is passed as a type function, therefore no need to pass in the arguments.
+	// Initializes the controller for the users `usersC`. This controller
+	// receives the template that is parsed by `views.ParseFS`. `usersC.New` is
+	// of type HandlerFunc, therefore it can be passed to `r.Get`. In here
+	// `usersC.New` is passed as a type function, therefore no need to pass in
+	// the arguments.
 	usersC := controllers.Users{
 		UserService:    &userService,
 		SessionService: &sessionService,
