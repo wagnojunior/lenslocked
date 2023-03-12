@@ -149,6 +149,7 @@ func (u Users) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 	u.Templates.ForgotPassword.Execute(w, r, data)
 }
 
+// ProcessForgotPassword processes forgotten passwords
 func (u Users) ProcessForgotPassword(w http.ResponseWriter, r *http.Request) {
 	var data struct {
 		Email string
@@ -193,7 +194,8 @@ type UserMiddleware struct {
 	SessionService *models.SessionService
 }
 
-// SetUser looks up a token session from the cookie session, retrieves the user associated with this token, and sets this user to the current request
+// SetUser looks up a token session from the cookie session, retrieves the user
+// associated with this token, and sets this user to the current request
 func (umw UserMiddleware) SetUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token, err := readCookie(r, CookieSession)
@@ -217,7 +219,8 @@ func (umw UserMiddleware) SetUser(next http.Handler) http.Handler {
 	})
 }
 
-// RequireUser checks if an user is signed in and redirects to the signin page if it ins't
+// RequireUser checks if an user is signed in and redirects to the signin page
+// if it ins't
 func (umw UserMiddleware) RequireUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user := context.User(r.Context())

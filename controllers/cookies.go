@@ -25,7 +25,8 @@ func setCookie(w http.ResponseWriter, name, value string) {
 	http.SetCookie(w, newCookie(name, value))
 }
 
-// readCookie reads the cookie defined by `name` and returns its value and an error
+// readCookie reads the cookie defined by `name` and returns its value and an
+// error
 func readCookie(r *http.Request, name string) (string, error) {
 	c, err := r.Cookie(name)
 	if err != nil {
@@ -34,7 +35,8 @@ func readCookie(r *http.Request, name string) (string, error) {
 	return c.Value, nil
 }
 
-// deleteCookie deletes a cookie by overwriting the existing one with a negative `MaxAge` field
+// deleteCookie deletes a cookie by overwriting the existing one with a
+// negative `MaxAge` field
 func deleteCookie(w http.ResponseWriter, name string) {
 	cookie := newCookie(name, "")
 	cookie.MaxAge = -1
