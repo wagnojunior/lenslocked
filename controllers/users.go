@@ -9,7 +9,8 @@ import (
 	"github.com/wagnojunior/lenslocked/models"
 )
 
-// Type Users holds a template struct that stores all the templates needed to render different pages
+// Type Users holds a template struct that stores all the templates needed to
+// render different pages
 type Users struct {
 	Templates struct {
 		New            Template
@@ -140,6 +141,10 @@ func (u Users) ProcessSignOut(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/signin", http.StatusFound)
 }
 
+// /////////////////////////////////////////////////////////////////////////////
+// PASSWORD RESET
+// /////////////////////////////////////////////////////////////////////////////
+
 // ForgotPassword executes the template `ForgotPassword` stored in `u.Templates`
 func (u Users) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 	var data struct {
@@ -156,7 +161,7 @@ func (u Users) ProcessForgotPassword(w http.ResponseWriter, r *http.Request) {
 	}
 	data.Email = r.FormValue("email")
 
-	// Create a new password reset token
+	// Creates a new password reset token
 	pwReset, err := u.PasswordResetService.Create(data.Email)
 	if err != nil {
 		// TODO: handle other cases in the future.
@@ -166,7 +171,7 @@ func (u Users) ProcessForgotPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create the URL that is sent to the user. Since this application is not
+	// Creates the URL that is sent to the user. Since this application is not
 	// in production mode, the URL is hard coded. However, in the futere it
 	// will be associated with the user model
 	vals := url.Values{
@@ -187,7 +192,9 @@ func (u Users) ProcessForgotPassword(w http.ResponseWriter, r *http.Request) {
 
 }
 
-///////////////////////////////////////////////////////////////////////////////
+// /////////////////////////////////////////////////////////////////////////////
+// MIDDLEWARE
+// /////////////////////////////////////////////////////////////////////////////
 
 // UserMiddleware defines a new type to handle the user middleware
 type UserMiddleware struct {
