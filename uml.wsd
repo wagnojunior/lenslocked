@@ -149,8 +149,8 @@ namespace templates {
         + {static} faq.gohtml
         + {static} home.gohtml
         + {static} me.gohtml
-        + {static} signin.gohtml
-        + {static} signup.gohtml
+        + {static} sign-in.gohtml
+        + {static} sign-up.gohtml
         + {static} tailwind.gohtml
     }
 }
