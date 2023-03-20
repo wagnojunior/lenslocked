@@ -53,7 +53,8 @@ func (u Users) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Creates a session after creating an user, since it is unecessary to ask a user to login immediately after they have signed up
+	// Creates a session after creating an user, since it is unecessary to ask
+	// a user to login immediately after they have signed up
 	session, err := u.SessionService.Create(user.ID)
 	if err != nil {
 		// TODO: long term-> show a warning about not being able to sign in
