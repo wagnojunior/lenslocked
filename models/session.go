@@ -1,12 +1,8 @@
 package models
 
 import (
-	"crypto/sha256"
 	"database/sql"
-	"encoding/base64"
 	"fmt"
-
-	"github.com/wagnojunior/lenslocked/rand"
 )
 
 const (
@@ -31,36 +27,33 @@ type SessionService struct {
 	BytesPerToken int
 }
 
-type TokenManager struct {
-	sessionService *SessionService
-}
+// type TokenManager struct {
+// 	sessionService *SessionService
+// }
 
-func (tm TokenManager) New() (token, tokenHash string, err error) {
-	// Checks if the given bytes per token meets the minimum requirement
-	bytesPerToken := tm.sessionService.BytesPerToken
-	if bytesPerToken < MinBytesPerToken {
-		bytesPerToken = MinBytesPerToken
-	}
+// func (tm TokenManager) New() (token, tokenHash string, err error) {
+// 	// Checks if the given bytes per token meets the minimum requirement
+// 	bytesPerToken := tm.sessionService.BytesPerToken
+// 	if bytesPerToken < MinBytesPerToken {
+// 		bytesPerToken = MinBytesPerToken
+// 	}
 
-	// Generates a session token using the specified `bytesPerToken`
-	token, err = rand.String(bytesPerToken)
-	if err != nil {
-		return "", "", fmt.Errorf("create: %w", err)
-	}
+// 	// Generates a session token using the specified `bytesPerToken`
+// 	token, err = rand.String(bytesPerToken)
+// 	if err != nil {
+// 		return "", "", fmt.Errorf("create: %w", err)
+// 	}
 
-	// Hashes the session token
-	tokenHash = tm.sessionService.hash(token)
+// 	// Hashes the session token
+// 	tokenHash = tm.sessionService.hash(token)
 
-	return token, tokenHash, nil
-}
+// 	return token, tokenHash, nil
+// }
 
 // Create creates a session
 func (ss *SessionService) Create(userID int) (*Session, error) {
-	tm := TokenManager{
-		sessionService: ss,
-	}
-
-	token, tokenHash, err := tm.New()
+	// Gets a token and token hash
+	token, tokenHash, err := New(ss.BytesPerToken)
 	if err != nil {
 		return nil, fmt.Errorf("create: %w", err)
 	}
@@ -73,11 +66,11 @@ func (ss *SessionService) Create(userID int) (*Session, error) {
 
 	// Creates a new session with the given value or updates an existing session (ON CONFLICT clause)
 	row := ss.DB.QueryRow(`
-	INSERT INTO sessions (user_id, token_hash)
-	VALUES ($1, $2) ON CONFLICT (user_id) DO
-	UPDATE
-	SET token_hash = $2
-	RETURNING id;`, session.UserID, session.TokenHash)
+		INSERT INTO sessions (user_id, token_hash)
+		VALUES ($1, $2) ON CONFLICT (user_id) DO
+		UPDATE
+		SET token_hash = $2
+		RETURNING id;`, session.UserID, session.TokenHash)
 	err = row.Scan(&session.ID)
 	if err != nil {
 		return nil, fmt.Errorf("create: %w", err)
@@ -88,7 +81,7 @@ func (ss *SessionService) Create(userID int) (*Session, error) {
 
 // Delete deletes a session defined by the token stored in the cookie
 func (ss *SessionService) Delete(token string) error {
-	tokenHash := ss.hash(token)
+	tokenHash := Hash(token)
 
 	_, err := ss.DB.Exec(`
 		DELETE FROM sessions
@@ -103,7 +96,7 @@ func (ss *SessionService) Delete(token string) error {
 // User returns an user for a given session token
 func (ss *SessionService) User(token string) (*User, error) {
 	// Hashes the token string
-	tokenHash := ss.hash(token)
+	tokenHash := Hash(token)
 
 	// Queries the DB for the user that corresponds to a token hash
 	var user User
@@ -120,8 +113,8 @@ func (ss *SessionService) User(token string) (*User, error) {
 	return &user, nil
 }
 
-// hash hashes a session token
-func (ss *SessionService) hash(token string) string {
-	tokenHash := sha256.Sum256([]byte(token))
-	return base64.URLEncoding.EncodeToString(tokenHash[:])
-}
+// // hash hashes a session token
+// func (ss *SessionService) hash(token string) string {
+// 	tokenHash := sha256.Sum256([]byte(token))
+// 	return base64.URLEncoding.EncodeToString(tokenHash[:])
+// }
