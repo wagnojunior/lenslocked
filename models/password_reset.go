@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -35,7 +36,54 @@ type PasswordResetService struct {
 
 // Create creates a new `PasswordReset` type
 func (prs *PasswordResetService) Create(email string) (*PasswordReset, error) {
-	return nil, fmt.Errorf("TODO: implement PasswordResetService.Create")
+	// Normalize the email
+	email = strings.ToLower(email)
+
+	var userID int
+	row := prs.DB.QueryRow(`
+		SELECT id
+		FROM users
+		WHERE email = $1`, email)
+	err := row.Scan(&userID)
+	if err != nil {
+		// TODO: consider returning a specific error when the user does not
+		// exists
+		return nil, fmt.Errorf("create: %w", err)
+	}
+
+	// Gets a token and token hash
+	token, tokenHash, err := New(prs.BytesPerToken)
+	if err != nil {
+		return nil, fmt.Errorf("create: %w", err)
+	}
+
+	// Handles the case where a duration is not provided
+	duration := prs.Duration
+	if duration == 0 {
+		duration = DefaultResetDuration
+	}
+
+	pwReset := PasswordReset{
+		UserID:    userID,
+		Token:     token,
+		TokenHash: tokenHash,
+		ExpiresAt: time.Now().Add(duration),
+	}
+
+	// Creates a new session with the given value, or updates an existing
+	// session (ON CONFLICT clause)
+	row = prs.DB.QueryRow(`
+		INSERT INTO password_resets (user_id, token_hash, expires_at)
+		VALUES ($1, $2, $3) ON CONFLICT (user_id) DO
+		UPDATE
+		SET token_hash = $2, expires_at = $3
+		RETURNING id;`, pwReset.UserID, pwReset.TokenHash, pwReset.ExpiresAt)
+	err = row.Scan(&pwReset.ID)
+	if err != nil {
+		return nil, fmt.Errorf("create: %w", err)
+	}
+
+	return &pwReset, nil
 }
 
 // Consume takes an existing password reset token and uses it
