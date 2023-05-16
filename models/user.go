@@ -89,7 +89,7 @@ func (us *UserService) UpdatePassword(userID int, password string) error {
 
 	_, err = us.DB.Exec(`
 		UPDATE users
-		SET password_hase = $2
+		SET password_hash = $2
 		WHERE id = $1`, userID, passwordHash)
 	if err != nil {
 		return fmt.Errorf("update password: %w", err)
