@@ -2,9 +2,23 @@ package models
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
+
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 )
 
+// /////////////////////////////////////////////////////////////////////////////
+// ERRORS
+// /////////////////////////////////////////////////////////////////////////////
+var (
+	ErrCreateSession = errors.New("models: could not create a session")
+)
+
+// /////////////////////////////////////////////////////////////////////////////
+// CONSTANTS
+// /////////////////////////////////////////////////////////////////////////////
 const (
 	// MinBytesPerToken is the minimum number of bytes per each session token
 	MinBytesPerToken = 32
@@ -73,6 +87,14 @@ func (ss *SessionService) Create(userID int) (*Session, error) {
 		RETURNING id;`, session.UserID, session.TokenHash)
 	err = row.Scan(&session.ID)
 	if err != nil {
+		// Check if the error is of type `*pgconn.PgError`
+		var pgError *pgconn.PgError
+		if errors.As(err, &pgError) {
+			// Checks if the error is of type `UndefinedTable`
+			if pgError.Code == pgerrcode.UndefinedTable {
+				return nil, ErrCreateSession
+			}
+		}
 		return nil, fmt.Errorf("create: %w", err)
 	}
 

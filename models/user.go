@@ -2,18 +2,20 @@ package models
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
+	"github.com/wagnojunior/lenslocked/errors"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // Variables
 var (
-	ErrEmailTaken = errors.New("models: email address is already in use")
+	ErrEmailTaken  = errors.New("models: email address is already in use")
+	ErrInvalidUser = errors.New("models: failed to retrieve user from the database")
+	ErrInvalidPW   = errors.New("models: failed to match the password with the stored password-hash")
 )
 
 // User defines the user model according to the `users` SQL table
@@ -91,12 +93,17 @@ func (us *UserService) Authenticate(email, password string) (*User, error) {
 		WHERE email = $1`, email)
 	err := row.Scan(&user.ID, &user.PasswordHash)
 	if err != nil {
+		// Checks if the error is of type `sql.ErrNoRows`
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrInvalidUser
+		}
+
 		return nil, fmt.Errorf("authenticate: %w", err)
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
 	if err != nil {
-		return nil, fmt.Errorf("authenticate: %w", err)
+		return nil, ErrInvalidPW
 	}
 
 	return &user, nil

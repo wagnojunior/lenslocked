@@ -61,9 +61,12 @@ func (u Users) Create(w http.ResponseWriter, r *http.Request) {
 	// a user to login immediately after they have signed up
 	session, err := u.SessionService.Create(user.ID)
 	if err != nil {
-		// TODO: long term-> show a warning about not being able to sign in
-		fmt.Println(err)
-		http.Redirect(w, r, "/signin", http.StatusFound)
+		// Checks the error type
+		if errors.Is(err, models.ErrCreateSession) {
+			err = errors.Public(err, "A new user was successfully created but we could not sign you in. Please, sign in again.")
+		}
+
+		u.Templates.SignIn.Execute(w, r, data, err)
 		return
 	}
 	setCookie(w, CookieSession, session.Token)
@@ -93,16 +96,26 @@ func (u Users) ProcessSignIn(w http.ResponseWriter, r *http.Request) {
 	// Authenticate user
 	user, err := u.UserService.Authenticate(data.Email, data.Password)
 	if err != nil {
-		fmt.Println(err)
-		http.Error(w, "Something went wrong", http.StatusInternalServerError)
+		if errors.Is(err, models.ErrInvalidUser) {
+			err = errors.Public(err, "There is no account associated with this email address. Are you sure this is the right email address?")
+		}
+		if errors.Is(err, models.ErrInvalidPW) {
+			err = errors.Public(err, "Wrong password. Please, try again or reset your password.")
+		}
+
+		u.Templates.SignIn.Execute(w, r, data, err)
+
 		return
 	}
 
 	// Proper location to set cookies is after authentication and before writing to the response writer
 	session, err := u.SessionService.Create(user.ID)
 	if err != nil {
-		fmt.Println(err)
-		http.Error(w, "Something went wrong", http.StatusInternalServerError)
+		// Checks the error type
+		if errors.Is(err, models.ErrCreateSession) {
+			err = errors.Public(err, "Something went wrong. Please, try to sign in again.")
+		}
+		u.Templates.SignIn.Execute(w, r, data, err)
 		return
 	}
 	setCookie(w, CookieSession, session.Token)
