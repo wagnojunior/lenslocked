@@ -46,11 +46,7 @@ func ParseFS(fs fs.FS, patterns ...string) (Template, error) {
 
 			},
 			"errors": func() []string {
-				return []string{
-					"Don't do that",
-					"The email address you provided is already associated with an account",
-					"Something went wrong.",
-				}
+				return nil
 			},
 		},
 	)
@@ -65,7 +61,7 @@ func ParseFS(fs fs.FS, patterns ...string) (Template, error) {
 }
 
 // Execute executes a template of type <Template> that is already parsed
-func (t Template) Execute(w http.ResponseWriter, r *http.Request, data interface{}) {
+func (t Template) Execute(w http.ResponseWriter, r *http.Request, data interface{}, errs ...error) {
 	// Clones the original template to avoid *race condition* where many users
 	// could be requesting from the same template at the same time
 	tpl, err := t.HTMLTpl.Clone()
@@ -85,6 +81,14 @@ func (t Template) Execute(w http.ResponseWriter, r *http.Request, data interface
 			"currentUser": func() *models.User {
 				return context.User(r.Context())
 
+			},
+			"errors": func() []string {
+				var errMessages []string
+				for _, err := range errs {
+					errMessages = append(errMessages, err.Error())
+				}
+
+				return errMessages
 			},
 		},
 	)
