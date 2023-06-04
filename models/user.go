@@ -2,10 +2,18 @@ package models
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"golang.org/x/crypto/bcrypt"
+)
+
+// Variables
+var (
+	ErrEmailTaken = errors.New("models: email address is already in use")
 )
 
 // User defines the user model according to the `users` SQL table
@@ -44,9 +52,21 @@ func (us *UserService) Create(email, password string) (*User, error) {
 		VALUES ($1, $2) RETURNING id`,
 		email, passwordHash)
 
-	// Scans for the id that was returned and saves if into `user.ID`
+	// Scans for the id that was returned and saves if into `user.ID`.
+	// The SQL driver `pgx` throws a `*pgconn.PgError` error when a user
+	// tries to sign up with an email that is already associated with an
+	// account. This use-case violates the unique constrait of the SQL DB.
 	err = row.Scan(&user.ID)
 	if err != nil {
+		// Checks if the error is of type `*pgconn.PgError`
+		var pgError *pgconn.PgError
+		if errors.As(err, &pgError) {
+			// Checks if the error is of type `UniqueViolation`
+			if pgError.Code == pgerrcode.UniqueViolation {
+				return nil, ErrEmailTaken
+			}
+		}
+
 		return nil, fmt.Errorf("create user: %w", err)
 	}
 
@@ -54,7 +74,10 @@ func (us *UserService) Create(email, password string) (*User, error) {
 
 }
 
-// Authenticate authenticates a user who is signin in to the server. The parameters `email` and `password` are received from the GUI. The user ID and password hash are queried from the DB and `bcrypt` is used to to match the entered password hash to the DB-stored value.
+// Authenticate authenticates a user who is signin in to the server. The
+// parameters `email` and `password` are received from the GUI. The user ID and
+// password hash are queried from the DB and `bcrypt` is used to to match the
+// entered password hash to the DB-stored value.
 func (us *UserService) Authenticate(email, password string) (*User, error) {
 	email = strings.ToLower(email)
 
