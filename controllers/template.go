@@ -12,5 +12,5 @@ import "net/http"
 // interface is valid.
 
 type Template interface {
-	Execute(w http.ResponseWriter, r *http.Request, data interface{})
+	Execute(w http.ResponseWriter, r *http.Request, data interface{}, errs ...error)
 }
