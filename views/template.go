@@ -19,7 +19,8 @@ type Template struct {
 	HTMLTpl *template.Template
 }
 
-// Must  wraps a call to a function returning (Template, error) and panics if the error is non-nil
+// Must wraps a call to a function returning (Template, error) and panics if
+// the error is non-nil
 func Must(t Template, err error) Template {
 	if err != nil {
 		panic(err)
@@ -29,7 +30,10 @@ func Must(t Template, err error) Template {
 
 // ParseFS parses the template located in the file system fs
 func ParseFS(fs fs.FS, patterns ...string) (Template, error) {
-	// We need to define the template functions BEFORE the templates are parsed. To do that we first create an empty template with the name of the first pattern. Then, we add a *placeholder* function to it. This temporaty function will latter be rewritten when the templace is executed.
+	// We need to define the template functions BEFORE the templates are parsed.
+	// To do that we first create an empty template with the name of the first
+	// pattern. Then, we add a *placeholder* function to it. This temporaty
+	// function will latter be rewritten when the templace is executed.
 	tpl := template.New(patterns[0])
 	tpl = tpl.Funcs(
 		template.FuncMap{
@@ -40,6 +44,13 @@ func ParseFS(fs fs.FS, patterns ...string) (Template, error) {
 			"currentUser": func() (template.HTML, error) {
 				return "", fmt.Errorf("currentUser not implemented")
 
+			},
+			"errors": func() []string {
+				return []string{
+					"Don't do that",
+					"The email address you provided is already associated with an account",
+					"Something went wrong.",
+				}
 			},
 		},
 	)
@@ -55,7 +66,8 @@ func ParseFS(fs fs.FS, patterns ...string) (Template, error) {
 
 // Execute executes a template of type <Template> that is already parsed
 func (t Template) Execute(w http.ResponseWriter, r *http.Request, data interface{}) {
-	// Clones the original template to avoid *race condition* where many users could be requesting from the same template at the same time
+	// Clones the original template to avoid *race condition* where many users
+	// could be requesting from the same template at the same time
 	tpl, err := t.HTMLTpl.Clone()
 	if err != nil {
 		log.Printf("cloning template: %v", err)
@@ -80,10 +92,11 @@ func (t Template) Execute(w http.ResponseWriter, r *http.Request, data interface
 	// Sets the content type of the response header
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	// Executes the template t with data
-	// If there is an error rendering, it will be handled here (i.e. invalid field in the template)
-	// This approach writes to the buffer until an error is detected (if any). If an error
-	// is detected half-way through the execution, then the webpage will not be rendered
+	// Executes the template t with data. If there is an error rendering, it
+	// will be handled here (i.e. invalid field in the template). This approach
+	// writes to the buffer until an error is detected (if any). If an error is
+	// detected half-way through the execution, then the webpage will not be
+	// rendered
 	var buf bytes.Buffer
 
 	err = tpl.Execute(&buf, data)
