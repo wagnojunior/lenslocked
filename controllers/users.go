@@ -44,13 +44,10 @@ func (u Users) Create(w http.ResponseWriter, r *http.Request) {
 	data.Email = r.FormValue("email")
 	data.Password = r.FormValue("password")
 
-	// email := r.FormValue("email")
-	// password := r.FormValue("password")
-
 	user, err := u.UserService.Create(data.Email, data.Password)
 	if err != nil {
-		fmt.Println(err)
-		http.Error(w, "Something went wrong", http.StatusInternalServerError)
+		u.Templates.New.Execute(w, r, data, err)
+
 		return
 	}
 
