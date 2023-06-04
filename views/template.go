@@ -2,6 +2,7 @@ package views
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"html/template"
 	"io"
@@ -13,6 +14,11 @@ import (
 	"github.com/wagnojunior/lenslocked/context"
 	"github.com/wagnojunior/lenslocked/models"
 )
+
+// public defines a public error message
+type public interface {
+	Public() string
+}
 
 // Custom template type that wraps around the native template type
 type Template struct {
@@ -71,6 +77,9 @@ func (t Template) Execute(w http.ResponseWriter, r *http.Request, data interface
 		return
 	}
 
+	// Gets all the error messages
+	errMessages := errMessages(errs...)
+
 	// This function replaces the placeholder function from `ParseFS`
 	tpl = tpl.Funcs(
 		template.FuncMap{
@@ -83,11 +92,6 @@ func (t Template) Execute(w http.ResponseWriter, r *http.Request, data interface
 
 			},
 			"errors": func() []string {
-				var errMessages []string
-				for _, err := range errs {
-					errMessages = append(errMessages, err.Error())
-				}
-
 				return errMessages
 			},
 		},
@@ -111,4 +115,23 @@ func (t Template) Execute(w http.ResponseWriter, r *http.Request, data interface
 	}
 
 	io.Copy(w, &buf)
+}
+
+// errMessages retuns a slice of error messages. If an error has a `Public`
+// message associated with it, then the public message is displayed. Otherwise,
+// a standard message is used.
+func errMessages(errs ...error) []string {
+	var msgs []string
+	for _, err := range errs {
+		// Checks if the error is of type `public` and displays it.
+		// If not, displays a regular message.
+		var pubErr public
+		if errors.As(err, &pubErr) {
+			msgs = append(msgs, pubErr.Public())
+		} else {
+			fmt.Println(err)
+			msgs = append(msgs, "Something went wrong.")
+		}
+	}
+	return msgs
 }
