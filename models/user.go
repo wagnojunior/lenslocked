@@ -11,13 +11,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// Variables
-var (
-	ErrEmailTaken  = errors.New("models: email address is already in use")
-	ErrInvalidUser = errors.New("models: failed to retrieve user from the database")
-	ErrInvalidPW   = errors.New("models: failed to match the password with the stored password-hash")
-)
-
 // User defines the user model according to the `users` SQL table
 type User struct {
 	ID           int
