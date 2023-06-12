@@ -85,21 +85,19 @@ func main() {
 		panic(err)
 	}
 
-	// Creates a UserService
+	// Defines the services
 	userService := &models.UserService{
 		DB: db,
 	}
-
-	// Creates the SessionService
 	sessionService := &models.SessionService{
 		DB: db,
 	}
-
-	// Creates the PasswordResetService
 	pwResetService := &models.PasswordResetService{
 		DB: db,
 	}
-
+	galleryService := &models.GalleryService{
+		DB: db,
+	}
 	emailService := models.NewEmailService(cfg.SMTP)
 
 	// Creates an instance of the UserMiddleware
@@ -138,6 +136,14 @@ func main() {
 	usersC.Templates.ResetPassword = views.Must(views.ParseFS(
 		templates.FS, "reset-pw.gohtml", "tailwind.gohtml"))
 
+	// Initializes the controller for the galleries `galleriesC`
+	galleriesC := controllers.Galleries{
+		GalleryService: galleryService,
+	}
+
+	galleriesC.Templates.New = views.Must(views.ParseFS(
+		templates.FS, "galleries/new.gohtml", "tailwind.gohtml"))
+
 	// Creates a new chi router and applies the different middlewares
 	r := chi.NewRouter()
 	r.Use(csrfMW)
@@ -162,6 +168,7 @@ func main() {
 		r.Use(umw.RequireUser)
 		r.Get("/", usersC.CurrentUser)
 	})
+	r.Get("/galleries/new", galleriesC.New)
 
 	// Starts the server
 	fmt.Printf("Starting the server on %s...", cfg.Server.Address)
