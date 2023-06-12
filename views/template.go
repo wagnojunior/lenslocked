@@ -9,6 +9,7 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"path"
 
 	"github.com/gorilla/csrf"
 	"github.com/wagnojunior/lenslocked/context"
@@ -40,7 +41,7 @@ func ParseFS(fs fs.FS, patterns ...string) (Template, error) {
 	// To do that we first create an empty template with the name of the first
 	// pattern. Then, we add a *placeholder* function to it. This temporaty
 	// function will latter be rewritten when the templace is executed.
-	tpl := template.New(patterns[0])
+	tpl := template.New(path.Base(patterns[0]))
 	tpl = tpl.Funcs(
 		template.FuncMap{
 			"csrfField": func() (template.HTML, error) {
