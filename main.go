@@ -109,6 +109,7 @@ func main() {
 	csrfMW := csrf.Protect(
 		[]byte(cfg.CSRF.Key),
 		csrf.Secure(cfg.CSRF.Secure),
+		csrf.Path("/"), // Sets all cookies path to `/`
 	)
 
 	// Initializes the controller for the users `usersC`. This controller
@@ -168,7 +169,14 @@ func main() {
 		r.Use(umw.RequireUser)
 		r.Get("/", usersC.CurrentUser)
 	})
-	r.Get("/galleries/new", galleriesC.New)
+	r.Route("/galleries", func(r chi.Router) {
+		// r.Group groups all paths to the same middleware
+		r.Group(func(r chi.Router) {
+			r.Use(umw.RequireUser)
+			r.Get("/new", galleriesC.New)
+		})
+
+	})
 
 	// Starts the server
 	fmt.Printf("Starting the server on %s...", cfg.Server.Address)
