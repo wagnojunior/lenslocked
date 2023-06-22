@@ -146,6 +146,8 @@ func main() {
 		templates.FS, "galleries/new.gohtml", "tailwind.gohtml"))
 	galleriesC.Templates.Edit = views.Must(views.ParseFS(
 		templates.FS, "galleries/edit.gohtml", "tailwind.gohtml"))
+	galleriesC.Templates.Index = views.Must(views.ParseFS(
+		templates.FS, "galleries/index.gohtml", "tailwind.gohtml"))
 
 	// Creates a new chi router and applies the different middlewares
 	r := chi.NewRouter()
