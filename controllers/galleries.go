@@ -15,8 +15,9 @@ import (
 // render different pages. Also, it holds the necessary services
 type Galleries struct {
 	Templates struct {
-		New  Template
-		Edit Template
+		New   Template
+		Edit  Template
+		Index Template
 	}
 	GalleryService *models.GalleryService
 }
@@ -131,5 +132,37 @@ func (g Galleries) Update(w http.ResponseWriter, r *http.Request) {
 
 	editPath := fmt.Sprintf("/galleries/%d/edit", gallery.ID)
 	http.Redirect(w, r, editPath, http.StatusFound)
+
+}
+
+// Index looks up all of a user's galleries and sends this information to be
+// rendered in a template
+func (g Galleries) Index(w http.ResponseWriter, r *http.Request) {
+	type Gallery struct {
+		ID    int
+		Title string
+	}
+
+	var data struct {
+		Galleries []Gallery
+	}
+
+	user := context.User(r.Context())
+	galleries, err := g.GalleryService.ByUserID(user.ID)
+	if err != nil {
+		http.Error(w, "something went wrong", http.StatusInternalServerError)
+		return
+	}
+
+	// Needs to translate the gallery which is stored in the DB to the
+	// Gallery type created in this handler
+	for _, gallery := range galleries {
+		data.Galleries = append(data.Galleries, Gallery{
+			ID:    gallery.ID,
+			Title: gallery.Title,
+		})
+	}
+
+	g.Templates.Index.Execute(w, r, data)
 
 }
