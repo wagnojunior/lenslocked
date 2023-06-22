@@ -93,3 +93,43 @@ func (g Galleries) Edit(w http.ResponseWriter, r *http.Request) {
 	g.Templates.Edit.Execute(w, r, data)
 
 }
+
+func (g Galleries) Update(w http.ResponseWriter, r *http.Request) {
+	// Gets the gallery ID from the URL parameters
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		http.Error(w, "invalid ID", http.StatusNotFound)
+		return
+	}
+
+	// Gets the gallery by the provided ID
+	gallery, err := g.GalleryService.ByID(id)
+	if err != nil {
+		if errors.Is(err, models.ErrInvalidGallery) {
+			http.Error(w, "gallery not found", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "something went wrong", http.StatusNotFound)
+		return
+	}
+
+	// Checks whether the retrieved gallery belongs to the user that requested
+	// it
+	user := context.User(r.Context())
+	if gallery.UserID != user.ID {
+		http.Error(w, "gallery not found", http.StatusNotFound)
+		return
+	}
+
+	// Retreives the new gallery name from the form
+	gallery.Title = r.FormValue("title")
+	err = g.GalleryService.Update(gallery)
+	if err != nil {
+		http.Error(w, "could not update the gallery", http.StatusInternalServerError)
+		return
+	}
+
+	editPath := fmt.Sprintf("/galleries/%d/edit", gallery.ID)
+	http.Redirect(w, r, editPath, http.StatusFound)
+
+}
