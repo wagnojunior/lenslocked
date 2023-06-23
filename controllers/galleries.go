@@ -116,6 +116,24 @@ func (g Galleries) Show(w http.ResponseWriter, r *http.Request) {
 	}
 
 	g.Templates.Show.Execute(w, r, data)
+
+}
+
+// Delete deletes a gallery
+func (g Galleries) Delete(w http.ResponseWriter, r *http.Request) {
+	gallery, err := g.galleryByID(w, r, userMustOwnGallery)
+	if err != nil {
+		return
+	}
+
+	err = g.GalleryService.Delete(gallery.ID)
+	if err != nil {
+		http.Error(w, "something went wrong", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/galleries", http.StatusFound)
+
 }
 
 // Index looks up all of a user's galleries and sends this information to be
