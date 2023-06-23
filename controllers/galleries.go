@@ -58,16 +58,8 @@ func (g Galleries) Create(w http.ResponseWriter, r *http.Request) {
 // gallery's ID is retrieved from the URL parameters, and a authorization check
 // is performed to assess whether the requesting user owns the gallery.
 func (g Galleries) Edit(w http.ResponseWriter, r *http.Request) {
-	gallery, err := g.galleryByID(w, r)
+	gallery, err := g.galleryByID(w, r, userMustOwnGallery)
 	if err != nil {
-		return
-	}
-
-	// Checks whether the retrieved gallery belongs to the user that requested
-	// it
-	user := context.User(r.Context())
-	if gallery.UserID != user.ID {
-		http.Error(w, "gallery not found", http.StatusNotFound)
 		return
 	}
 
@@ -85,16 +77,8 @@ func (g Galleries) Edit(w http.ResponseWriter, r *http.Request) {
 }
 
 func (g Galleries) Update(w http.ResponseWriter, r *http.Request) {
-	gallery, err := g.galleryByID(w, r)
+	gallery, err := g.galleryByID(w, r, userMustOwnGallery)
 	if err != nil {
-		return
-	}
-
-	// Checks whether the retrieved gallery belongs to the user that requested
-	// it
-	user := context.User(r.Context())
-	if gallery.UserID != user.ID {
-		http.Error(w, "gallery not found", http.StatusNotFound)
 		return
 	}
 
@@ -166,8 +150,13 @@ func (g Galleries) Index(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// galleryByID is a helper method that gets a gallery by ID and returns it
-func (g Galleries) galleryByID(w http.ResponseWriter, r *http.Request) (*models.Gallery, error) {
+// galleryOpt defines a functional option. Functions that have this signature
+// are of type galleryOpt
+type galleryOpt func(http.ResponseWriter, *http.Request, *models.Gallery) error
+
+// galleryByID is a helper method that gets a gallery by ID and returns it. It
+// receives a functional options, which are set the the caller of galleryByID
+func (g Galleries) galleryByID(w http.ResponseWriter, r *http.Request, opts ...galleryOpt) (*models.Gallery, error) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		http.Error(w, "invalid ID", http.StatusNotFound)
@@ -185,5 +174,28 @@ func (g Galleries) galleryByID(w http.ResponseWriter, r *http.Request) (*models.
 		return nil, err
 	}
 
+	// Loops through all functional options and returns an error, if any. This
+	// erros is subsequently handled by the underlying function
+	for _, opt := range opts {
+		err = opt(w, r, gallery)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return gallery, nil
+}
+
+// userMustOwnGallery is a functional option which determines that a user must
+// own a gallery
+func userMustOwnGallery(w http.ResponseWriter, r *http.Request, gallery *models.Gallery) error {
+	// Checks whether the retrieved gallery belongs to the user that requested
+	// it
+	user := context.User(r.Context())
+	if gallery.UserID != user.ID {
+		http.Error(w, "gallery not found", http.StatusNotFound)
+		return fmt.Errorf("user does not have access to this gallery")
+	}
+
+	return nil
 }
