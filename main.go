@@ -148,6 +148,8 @@ func main() {
 		templates.FS, "galleries/edit.gohtml", "tailwind.gohtml"))
 	galleriesC.Templates.Index = views.Must(views.ParseFS(
 		templates.FS, "galleries/index.gohtml", "tailwind.gohtml"))
+	galleriesC.Templates.Show = views.Must(views.ParseFS(
+		templates.FS, "galleries/show.gohtml", "tailwind.gohtml"))
 
 	// Creates a new chi router and applies the different middlewares
 	r := chi.NewRouter()
@@ -175,6 +177,7 @@ func main() {
 	})
 	r.Route("/galleries", func(r chi.Router) {
 		// r.Group groups all paths to the same middleware
+		r.Get("/{id}", galleriesC.Show)
 		r.Group(func(r chi.Router) {
 			r.Use(umw.RequireUser)
 			r.Get("/new", galleriesC.New)
