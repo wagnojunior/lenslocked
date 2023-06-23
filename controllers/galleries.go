@@ -58,21 +58,8 @@ func (g Galleries) Create(w http.ResponseWriter, r *http.Request) {
 // gallery's ID is retrieved from the URL parameters, and a authorization check
 // is performed to assess whether the requesting user owns the gallery.
 func (g Galleries) Edit(w http.ResponseWriter, r *http.Request) {
-	// Gets the gallery ID from the URL parameters
-	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	gallery, err := g.galleryByID(w, r)
 	if err != nil {
-		http.Error(w, "invalid ID", http.StatusNotFound)
-		return
-	}
-
-	// Gets the gallery by the provided ID
-	gallery, err := g.GalleryService.ByID(id)
-	if err != nil {
-		if errors.Is(err, models.ErrInvalidGallery) {
-			http.Error(w, "gallery not found", http.StatusNotFound)
-			return
-		}
-		http.Error(w, "something went wrong", http.StatusNotFound)
 		return
 	}
 
@@ -98,21 +85,8 @@ func (g Galleries) Edit(w http.ResponseWriter, r *http.Request) {
 }
 
 func (g Galleries) Update(w http.ResponseWriter, r *http.Request) {
-	// Gets the gallery ID from the URL parameters
-	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	gallery, err := g.galleryByID(w, r)
 	if err != nil {
-		http.Error(w, "invalid ID", http.StatusNotFound)
-		return
-	}
-
-	// Gets the gallery by the provided ID
-	gallery, err := g.GalleryService.ByID(id)
-	if err != nil {
-		if errors.Is(err, models.ErrInvalidGallery) {
-			http.Error(w, "gallery not found", http.StatusNotFound)
-			return
-		}
-		http.Error(w, "something went wrong", http.StatusNotFound)
 		return
 	}
 
@@ -139,20 +113,8 @@ func (g Galleries) Update(w http.ResponseWriter, r *http.Request) {
 
 // Show shows the images in a gallery
 func (g Galleries) Show(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	gallery, err := g.galleryByID(w, r)
 	if err != nil {
-		http.Error(w, "invalid ID", http.StatusNotFound)
-		return
-	}
-
-	// Gets the gallery by the provided ID
-	gallery, err := g.GalleryService.ByID(id)
-	if err != nil {
-		if errors.Is(err, models.ErrInvalidGallery) {
-			http.Error(w, "gallery not found", http.StatusNotFound)
-			return
-		}
-		http.Error(w, "something went wrong", http.StatusNotFound)
 		return
 	}
 
@@ -202,4 +164,26 @@ func (g Galleries) Index(w http.ResponseWriter, r *http.Request) {
 
 	g.Templates.Index.Execute(w, r, data)
 
+}
+
+// galleryByID is a helper method that gets a gallery by ID and returns it
+func (g Galleries) galleryByID(w http.ResponseWriter, r *http.Request) (*models.Gallery, error) {
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		http.Error(w, "invalid ID", http.StatusNotFound)
+		return nil, err
+	}
+
+	// Gets the gallery by the provided ID
+	gallery, err := g.GalleryService.ByID(id)
+	if err != nil {
+		if errors.Is(err, models.ErrInvalidGallery) {
+			http.Error(w, "gallery not found", http.StatusNotFound)
+			return nil, err
+		}
+		http.Error(w, "something went wrong", http.StatusNotFound)
+		return nil, err
+	}
+
+	return gallery, nil
 }
