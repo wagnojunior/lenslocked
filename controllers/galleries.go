@@ -33,17 +33,20 @@ func (g Galleries) New(w http.ResponseWriter, r *http.Request) {
 	g.Templates.New.Execute(w, r, data)
 }
 
-// Create handles the creation of a new gallery
+// Create handles the creation of a new gallery. Galleries are created
+// unpublished by default
 func (g Galleries) Create(w http.ResponseWriter, r *http.Request) {
 	var data struct {
 		UserID int
 		Title  string
+		Status models.PublicationStatus
 	}
 
 	data.UserID = context.User(r.Context()).ID
 	data.Title = r.FormValue("title")
+	data.Status = models.Unpublished
 
-	gallery, err := g.GalleryService.Create(data.Title, data.UserID)
+	gallery, err := g.GalleryService.Create(data.Title, data.Status, data.UserID)
 	if err != nil {
 		g.Templates.New.Execute(w, r, data, err)
 		return
@@ -64,12 +67,14 @@ func (g Galleries) Edit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var data struct {
-		ID    int
-		Title string
+		ID     int
+		Title  string
+		Status models.PublicationStatus
 	}
 
 	data.ID = gallery.ID
 	data.Title = gallery.Title
+	data.Status = gallery.Status
 
 	// Renders the `Edit` page with the passed data
 	g.Templates.Edit.Execute(w, r, data)
@@ -97,7 +102,7 @@ func (g Galleries) Update(w http.ResponseWriter, r *http.Request) {
 
 // Show shows the images in a gallery
 func (g Galleries) Show(w http.ResponseWriter, r *http.Request) {
-	gallery, err := g.galleryByID(w, r)
+	gallery, err := g.galleryByID(w, r, galleryMustBeVisible)
 	if err != nil {
 		return
 	}
@@ -117,6 +122,44 @@ func (g Galleries) Show(w http.ResponseWriter, r *http.Request) {
 
 	g.Templates.Show.Execute(w, r, data)
 
+}
+
+// Publish handles the change of status of a gallery from unpublished to
+// published
+func (g Galleries) Publish(w http.ResponseWriter, r *http.Request) {
+	gallery, err := g.galleryByID(w, r, userMustOwnGallery)
+	if err != nil {
+		return
+	}
+
+	err = g.GalleryService.Publish(gallery)
+	if err != nil {
+		http.Error(w, "could not publish the gallery", http.StatusInternalServerError)
+		return
+	}
+
+	// Redirect the user to the page them came from (refresh page)
+	editPath := r.Header.Get("Referer")
+	http.Redirect(w, r, editPath, http.StatusFound)
+}
+
+// Unpublish handles the change of status of a gallery from published to
+// unpublished
+func (g Galleries) Unpublish(w http.ResponseWriter, r *http.Request) {
+	gallery, err := g.galleryByID(w, r, userMustOwnGallery)
+	if err != nil {
+		return
+	}
+
+	err = g.GalleryService.Unpublish(gallery)
+	if err != nil {
+		http.Error(w, "could not unpublish the gallery", http.StatusInternalServerError)
+		return
+	}
+
+	// Redirect the user to the page them came from (refresh page)
+	editPath := r.Header.Get("Referer")
+	http.Redirect(w, r, editPath, http.StatusFound)
 }
 
 // Delete deletes a gallery
@@ -140,8 +183,9 @@ func (g Galleries) Delete(w http.ResponseWriter, r *http.Request) {
 // rendered in a template
 func (g Galleries) Index(w http.ResponseWriter, r *http.Request) {
 	type Gallery struct {
-		ID    int
-		Title string
+		ID     int
+		Title  string
+		Status models.PublicationStatus
 	}
 
 	var data struct {
@@ -159,8 +203,9 @@ func (g Galleries) Index(w http.ResponseWriter, r *http.Request) {
 	// Gallery type created in this handler
 	for _, gallery := range galleries {
 		data.Galleries = append(data.Galleries, Gallery{
-			ID:    gallery.ID,
-			Title: gallery.Title,
+			ID:     gallery.ID,
+			Title:  gallery.Title,
+			Status: gallery.Status,
 		})
 	}
 
@@ -213,6 +258,22 @@ func userMustOwnGallery(w http.ResponseWriter, r *http.Request, gallery *models.
 	if gallery.UserID != user.ID {
 		http.Error(w, "gallery not found", http.StatusNotFound)
 		return fmt.Errorf("user does not have access to this gallery")
+	}
+
+	return nil
+}
+
+// galleryMustBeVisible checks if a user has acccess to the given gallery. If a
+// user does not own a gallery and it is set to UNPUBLISHED, then access to the
+// gallery is denied. Otherwise, access is granted
+func galleryMustBeVisible(w http.ResponseWriter, r *http.Request, gallery *models.Gallery) error {
+	user := context.User(r.Context())
+
+	var thirdPartyGallery bool = (gallery.UserID != user.ID)
+	var unpublished bool = (gallery.Status == models.Unpublished)
+	if thirdPartyGallery && unpublished {
+		http.Error(w, "gallery not found", http.StatusNotFound)
+		return fmt.Errorf("gallery is not published and user does not have access to it")
 	}
 
 	return nil
