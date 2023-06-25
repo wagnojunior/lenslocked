@@ -28,10 +28,34 @@
                         <a href="/galleries/{{.ID}}/edit"
                             class="
                                 py-1 px-2
-                                bg-green-100 hover:bg-green-200
-                                border border-green-600
-                                text-xs text-green-600
+                                bg-yellow-100 hover:bg-yellow-200
+                                border border-yellow-600
+                                text-xs text-yellow-600
                                 rounded">Edit</a>
+                        {{if eq .Status "unpublished"}}
+                        <form action="/galleries/{{.ID}}/publish" method="post" onsubmit="return confirm('Do you really want to publish this gallery?');">
+                            {{csrfField}}
+                            <button type="submit"
+                                class="
+                                    py-1 px-2
+                                    bg-green-100 hover:bg-green-200
+                                    border border-green-600
+                                    text-xs text-green-600
+                                    rounded">Publish</button>
+                            </form>
+                        {{end}}
+                        {{if eq .Status "published"}}
+                        <form action="/galleries/{{.ID}}/unpublish" method="post" onsubmit="return confirm('Do you really want to unpublish this gallery?');">
+                            {{csrfField}}
+                            <button type="submit"
+                                class="
+                                    py-1 px-2
+                                    bg-gray-100 hover:bg-gray-200
+                                    border border-gray-600
+                                    text-xs text-gray-600
+                                    rounded">Unpublish</button>
+                            </form>
+                        {{end}}
                         <form action="/galleries/{{.ID}}/delete" method="post" onsubmit="return confirm('Do you really want to delete this gallery?');">
                         {{csrfField}}
                         <button type="submit"
