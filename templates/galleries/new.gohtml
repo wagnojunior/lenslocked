@@ -9,10 +9,13 @@
                 {{csrfField}}
             </div>
             <div class="py-2">
-                <label for="title" class="text-sm font-semibold text-gray-800">Title</label>
+                <label for="title" class="text-lg font-semibold text-gray-800">Title</label>
                 <input
                     name="title" id="title" type="text" placeholder="Gallery Title" required class="w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-800 rounded"
                     value="{{.Title}}"/>
+            </div>
+            <div class="py-2">
+                <h1 class="pt-4 text-sm text-gray-800">This gallery is currently visible to you only. To change the visibility, please visit the Edit page.</h1>
             </div>
             <div class="py-4">
                 <button
