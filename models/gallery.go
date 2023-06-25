@@ -6,11 +6,23 @@ import (
 	"fmt"
 )
 
+// PublicationStatus defines a new type that wraps the native string type. It
+// represents the publication status of a gallery (i.e.: published,
+// unpublished). The default publication status of a gallery is unpublished
+type PublicationStatus string
+
+// Defines the two publication status
+var (
+	Published   PublicationStatus = "published"
+	Unpublished PublicationStatus = "unpublished"
+)
+
 // Gallery defines the gallery model according to the `gallery` SQL table
 type Gallery struct {
 	ID     int
 	UserID int
 	Title  string
+	Status PublicationStatus
 }
 
 // GalleryService defines the connection to the `gallery` DB
@@ -18,18 +30,19 @@ type GalleryService struct {
 	DB *sql.DB
 }
 
-// Create creates a new gallery with the given title and associated with the
-// given user
-func (service *GalleryService) Create(title string, userID int) (*Gallery, error) {
+// Create creates a new gallery with the given title, publication status and
+// associated with the given user.
+func (service *GalleryService) Create(title string, status PublicationStatus, userID int) (*Gallery, error) {
 	gallery := Gallery{
 		Title:  title,
 		UserID: userID,
+		Status: status,
 	}
 
 	row := service.DB.QueryRow(`
-		INSERT INTO galleries (title, user_id)
-		VALUES ($1, $2) RETURNING id`,
-		title, userID)
+		INSERT INTO galleries (title, publication_status, user_id)
+		VALUES ($1, $2, $3) RETURNING id`,
+		title, status, userID)
 
 	err := row.Scan(&gallery.ID)
 	if err != nil {
@@ -46,12 +59,12 @@ func (service *GalleryService) ByID(id int) (*Gallery, error) {
 	}
 
 	row := service.DB.QueryRow(`
-		SELECT title, user_id
+		SELECT title, publication_status, user_id
 		FROM galleries
 		WHERE id = $1`,
 		id)
 
-	err := row.Scan(&gallery.Title, &gallery.UserID)
+	err := row.Scan(&gallery.Title, &gallery.Status, &gallery.UserID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrInvalidGallery
@@ -65,7 +78,7 @@ func (service *GalleryService) ByID(id int) (*Gallery, error) {
 // ByUserID query and returns all galleries associated with a user ID
 func (service *GalleryService) ByUserID(userID int) ([]Gallery, error) {
 	rows, err := service.DB.Query(`
-		SELECT id, title
+		SELECT id, title, publication_status
 		FROM galleries
 		WHERE user_id = $1`,
 		userID)
@@ -82,7 +95,7 @@ func (service *GalleryService) ByUserID(userID int) ([]Gallery, error) {
 			UserID: userID,
 		}
 
-		err = rows.Scan(&gallery.ID, &gallery.Title)
+		err = rows.Scan(&gallery.ID, &gallery.Title, &gallery.Status)
 		if err != nil {
 			return nil, fmt.Errorf("query galleries by user id: %w", err)
 		}
@@ -106,6 +119,40 @@ func (service *GalleryService) Update(gallery *Gallery) error {
 		gallery.ID, gallery.Title)
 	if err != nil {
 		return fmt.Errorf("update gallery: %w", err)
+	}
+
+	return nil
+}
+
+// Publish changes the publication status of a gallery from unpublished to
+// publish
+func (service *GalleryService) Publish(gallery *Gallery) error {
+	newStatus := "published"
+
+	_, err := service.DB.Exec(`
+		UPDATE galleries
+		SET publication_status = $2
+		WHERE id = $1`,
+		gallery.ID, newStatus)
+	if err != nil {
+		return fmt.Errorf("publish gallery: %w", err)
+	}
+
+	return nil
+}
+
+// Unpublish changes the publication status of a gallery from published to
+// unpublish
+func (service *GalleryService) Unpublish(gallery *Gallery) error {
+	newStatus := "unpublished"
+
+	_, err := service.DB.Exec(`
+		UPDATE galleries
+		SET publication_status = $2
+		WHERE id = $1`,
+		gallery.ID, newStatus)
+	if err != nil {
+		return fmt.Errorf("unpublish gallery: %w", err)
 	}
 
 	return nil
