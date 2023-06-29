@@ -4,12 +4,18 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"path/filepath"
 )
 
 // PublicationStatus defines a new type that wraps the native string type. It
 // represents the publication status of a gallery (i.e.: published,
 // unpublished). The default publication status of a gallery is unpublished
 type PublicationStatus string
+
+const (
+	// standard directory where the images are stored
+	stdImageDir string = "images"
+)
 
 // Defines the two publication status
 var (
@@ -28,6 +34,10 @@ type Gallery struct {
 // GalleryService defines the connection to the `gallery` DB
 type GalleryService struct {
 	DB *sql.DB
+	// ImagesDir is used to tell the GalleryService where to store and locate
+	// images. If not set, the GalleryService will default to using the "images"
+	// directory
+	ImagesDir string
 }
 
 // Create creates a new gallery with the given title, publication status and
@@ -169,4 +179,16 @@ func (service *GalleryService) Delete(id int) error {
 	}
 
 	return nil
+}
+
+// galleryDir returns the directory where the images of the given directory are
+// stored. If no directory is specified (i.e.: empty string), then the standard
+// directory, defined as the constant stdImageDir, is used.
+func (service *GalleryService) galleryDir(id int) string {
+	imagesDir := service.ImagesDir
+	if imagesDir == "" {
+		imagesDir = stdImageDir
+	}
+
+	return filepath.Join(imagesDir, fmt.Sprintf("gallery-%d", id))
 }
