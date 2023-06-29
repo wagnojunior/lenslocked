@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"strings"
 )
 
 // PublicationStatus defines a new type that wraps the native string type. It
@@ -29,6 +30,12 @@ type Gallery struct {
 	UserID int
 	Title  string
 	Status PublicationStatus
+}
+
+// Image defines a new type to represent an Image
+type Image struct {
+	// Path where the image is stored
+	Path string
 }
 
 // GalleryService defines the connection to the `gallery` DB
@@ -179,6 +186,61 @@ func (service *GalleryService) Delete(id int) error {
 	}
 
 	return nil
+}
+
+// /////////////////////////////////////////////////////////////////////////////
+// IMAGES
+// /////////////////////////////////////////////////////////////////////////////
+// extensions return a list of image extensions supported by the server
+func (service *GalleryService) extensions() []string {
+	return []string{
+		".png", ".jpg", "jpeg", ".gif",
+	}
+}
+
+// Images returns a slice of Image in the given gallery.
+func (service *GalleryService) Images(galleryID int) ([]Image, error) {
+	// Firstly, the directory of the given gallery is retrieved. Secondly, a
+	// glob pattern is constructed so that all files inside the directory are
+	// returned. Thirdly, the extension of each file is checked to confirm if
+	// it is amoung the supported extensions.
+
+	galleryDir := service.galleryDir(galleryID)
+	globPattern := filepath.Join(galleryDir, "*")
+	allFiles, err := filepath.Glob(globPattern)
+	if err != nil {
+		return nil, fmt.Errorf("retrieving images from gallery %d: %w", galleryID, err)
+	}
+
+	var images []Image
+	supportedExt := service.extensions()
+	for _, file := range allFiles {
+		fileIsImage := hasExtension(file, supportedExt)
+		if fileIsImage {
+			images = append(images, Image{
+				Path: file,
+			})
+		}
+	}
+
+	return images, nil
+}
+
+// hasExtension returns true if the given file has one of the provided
+// extensions
+func hasExtension(file string, extension []string) bool {
+	for _, ext := range extension {
+		file = strings.ToLower(file)
+		ext = strings.ToLower(ext)
+
+		fileExt := filepath.Ext(file)
+		sameExt := (fileExt == ext)
+		if sameExt {
+			return true
+		}
+	}
+
+	return false
 }
 
 // galleryDir returns the directory where the images of the given directory are
