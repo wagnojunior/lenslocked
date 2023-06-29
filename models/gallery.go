@@ -34,8 +34,9 @@ type Gallery struct {
 
 // Image defines a new type to represent an Image
 type Image struct {
-	// Path where the image is stored
-	Path string
+	GalleryID int
+	Path      string
+	Filename  string
 }
 
 // GalleryService defines the connection to the `gallery` DB
@@ -218,7 +219,9 @@ func (service *GalleryService) Images(galleryID int) ([]Image, error) {
 		fileIsImage := hasExtension(file, supportedExt)
 		if fileIsImage {
 			images = append(images, Image{
-				Path: file,
+				GalleryID: galleryID,
+				Path:      file,
+				Filename:  filepath.Base(file),
 			})
 		}
 	}
