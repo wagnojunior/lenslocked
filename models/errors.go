@@ -13,4 +13,7 @@ var (
 
 	// GALLERY
 	ErrInvalidGallery = errors.New("models: failed to retrieve gallery from the databse")
+
+	// IMAGE
+	ErrImageNotFound = errors.New("models: failed to query for image")
 )
