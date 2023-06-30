@@ -178,6 +178,7 @@ func main() {
 	r.Route("/galleries", func(r chi.Router) {
 		// r.Group groups all paths to the same middleware
 		r.Get("/{id}", galleriesC.Show)
+		r.Get("/{id}/images/{filename}", galleriesC.Image)
 		r.Group(func(r chi.Router) {
 			r.Use(umw.RequireUser)
 			r.Get("/new", galleriesC.New)
