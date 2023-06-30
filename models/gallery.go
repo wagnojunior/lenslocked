@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"io/fs"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -192,6 +194,7 @@ func (service *GalleryService) Delete(id int) error {
 // /////////////////////////////////////////////////////////////////////////////
 // IMAGES
 // /////////////////////////////////////////////////////////////////////////////
+
 // extensions return a list of image extensions supported by the server
 func (service *GalleryService) extensions() []string {
 	return []string{
@@ -229,6 +232,25 @@ func (service *GalleryService) Images(galleryID int) ([]Image, error) {
 	return images, nil
 }
 
+func (service *GalleryService) Image(galleryID int, filename string) (Image, error) {
+	imagePath := filepath.Join(service.galleryDir(galleryID), filename)
+	_, err := os.Stat(imagePath)
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return Image{}, ErrImageNotFound
+		}
+
+		return Image{}, fmt.Errorf("querying for image: %w", err)
+	}
+
+	image := Image{
+		Filename:  filename,
+		GalleryID: galleryID,
+		Path:      imagePath,
+	}
+	return image, nil
+}
+
 // hasExtension returns true if the given file has one of the provided
 // extensions
 func hasExtension(file string, extension []string) bool {
@@ -246,7 +268,7 @@ func hasExtension(file string, extension []string) bool {
 	return false
 }
 
-// galleryDir returns the directory where the images of the given directory are
+// galleryDir returns the directory where the images of the given gallery are
 // stored. If no directory is specified (i.e.: empty string), then the standard
 // directory, defined as the constant stdImageDir, is used.
 func (service *GalleryService) galleryDir(id int) string {
