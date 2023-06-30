@@ -253,6 +253,22 @@ func (service *GalleryService) Image(galleryID int, filename string) (Image, err
 	return image, nil
 }
 
+// DeleteImage deletes the image defined by the given gallery ID and filename.
+// It returnns nil if the image is successfully deleted, or an error otherwise
+func (service *GalleryService) DeleteImage(galleryID int, filename string) error {
+	image, err := service.Image(galleryID, filename)
+	if err != nil {
+		return fmt.Errorf("deleting image: %w", err)
+	}
+
+	err = os.Remove(image.Path)
+	if err != nil {
+		return fmt.Errorf("deleting image: %w", err)
+	}
+
+	return nil
+}
+
 // hasExtension returns true if the given file has one of the provided
 // extensions
 func hasExtension(file string, extension []string) bool {
