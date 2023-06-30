@@ -232,6 +232,8 @@ func (service *GalleryService) Images(galleryID int) ([]Image, error) {
 	return images, nil
 }
 
+// Image returns the image defined by the given filename and given gallery. An
+// error is returned in case the image does not exist
 func (service *GalleryService) Image(galleryID int, filename string) (Image, error) {
 	imagePath := filepath.Join(service.galleryDir(galleryID), filename)
 	_, err := os.Stat(imagePath)
