@@ -228,6 +228,44 @@ func (g Galleries) Index(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// Image handles HTTP requests to show an image.
+func (g Galleries) Image(w http.ResponseWriter, r *http.Request) {
+	filename := chi.URLParam(r, "filename")
+	galleryID, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		http.Error(w, "invalid gallery ID", http.StatusNotFound)
+		return
+	}
+
+	images, err := g.GalleryService.Images(galleryID)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "something went wrong", http.StatusInternalServerError)
+		return
+	}
+
+	var requestedImage models.Image
+	imageFound := false
+	for _, image := range images {
+		if image.Filename == filename {
+			requestedImage = image
+			imageFound = true
+			break
+		}
+	}
+
+	if !imageFound {
+		http.Error(w, "image not found", http.StatusNotFound)
+		return
+	}
+
+	http.ServeFile(w, r, requestedImage.Path)
+}
+
+// /////////////////////////////////////////////////////////////////////////////
+// FUNCTIONAL OPTIONS
+// /////////////////////////////////////////////////////////////////////////////
+
 // galleryOpt defines a functional option. Functions that have this signature
 // are of type galleryOpt
 type galleryOpt func(http.ResponseWriter, *http.Request, *models.Gallery) error
