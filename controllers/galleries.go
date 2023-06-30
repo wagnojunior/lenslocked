@@ -273,6 +273,27 @@ func (g Galleries) Image(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, image.Path)
 }
 
+// DeleteImage handles the HTTP request to delete an image
+func (g Galleries) DeleteImage(w http.ResponseWriter, r *http.Request) {
+	// Verifies that the user actually owns the gallery
+	filename := chi.URLParam(r, "filename")
+	gallery, err := g.galleryByID(w, r, userMustOwnGallery)
+	if err != nil {
+		return
+	}
+
+	err = g.GalleryService.DeleteImage(gallery.ID, filename)
+	if err != nil {
+		http.Error(w, "something went wrong", http.StatusInternalServerError)
+		return
+	}
+
+	// Redirects the user to the edit page
+	editPath := fmt.Sprintf("/galleries/%d/edit", gallery.ID)
+	http.Redirect(w, r, editPath, http.StatusFound)
+
+}
+
 // /////////////////////////////////////////////////////////////////////////////
 // FUNCTIONAL OPTIONS
 // /////////////////////////////////////////////////////////////////////////////
