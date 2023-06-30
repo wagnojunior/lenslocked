@@ -20,7 +20,21 @@
                     Update
                 </button>
             </div>
-        </form> 
+        </form>
+
+        <div class="py-4 ">
+            <h2 class="pb-4 text-lg font-semibold text-gray-800">
+                Current images    
+            </h2>
+            <div class="py-2 grid grid-cols-8 gap-2">
+                {{range .Images}}
+                    <div class="h-min w-full relative">
+                        <img class="w-full" src="/galleries/{{.GalleryID}}/images/{{.FilenameEscaped}}">
+                    </div>
+                {{end}}
+            </div>
+        </div>
+
         <!-- DANGEROUS ACTIONS -->
         <div class="py-4">
             <h2 class="font-bold">
