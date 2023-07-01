@@ -190,6 +190,7 @@ func main() {
 			r.Post("/{id}/publish", galleriesC.Publish)
 			r.Post("/{id}/unpublish", galleriesC.Unpublish)
 			r.Post("/{id}/images/{filename}/delete", galleriesC.DeleteImage)
+			r.Post("/{id}/images", galleriesC.UploadImage)
 		})
 
 	})

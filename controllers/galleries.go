@@ -3,6 +3,7 @@ package controllers
 import (
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"path/filepath"
@@ -293,6 +294,42 @@ func (g Galleries) DeleteImage(w http.ResponseWriter, r *http.Request) {
 	editPath := fmt.Sprintf("/galleries/%d/edit", gallery.ID)
 	http.Redirect(w, r, editPath, http.StatusFound)
 
+}
+
+// UploadImage handlers the HTTP POST request to upload an image
+func (g Galleries) UploadImage(w http.ResponseWriter, r *http.Request) {
+	// Verifies that the user actually owns the gallery
+	gallery, err := g.galleryByID(w, r, userMustOwnGallery)
+	if err != nil {
+		return
+	}
+
+	// Parses the request body as multipart/form-data. The argument is the
+	// maximum memory allocated for this action. The parts of the request body
+	// that do not fit in the allocated memory are stored in disk as temporary
+	// files
+	err = r.ParseMultipartForm(5 << 20) // 5MB
+	if err != nil {
+		http.Error(w, "something went wrong", http.StatusInternalServerError)
+		return
+	}
+
+	// Accesses the file headers that were uploaded under the name `images` in
+	// the HTML form. Since many files can be uploaded simulteneously, a slice
+	// of file headers is returned
+	fileHeaders := r.MultipartForm.File["images"]
+	for _, fileHeader := range fileHeaders {
+		file, err := fileHeader.Open()
+		if err != nil {
+			http.Error(w, "something went wrong", http.StatusInternalServerError)
+		}
+		defer file.Close()
+
+		fmt.Printf("Attempting to upload %v for gallery %d.\n",
+			fileHeader.Filename, gallery.ID)
+		io.Copy(w, file)
+		return
+	}
 }
 
 // /////////////////////////////////////////////////////////////////////////////
