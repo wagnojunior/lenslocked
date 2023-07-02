@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -198,7 +199,7 @@ func (service *GalleryService) Delete(id int) error {
 // extensions return a list of image extensions supported by the server
 func (service *GalleryService) extensions() []string {
 	return []string{
-		".png", ".jpg", "jpeg", ".gif",
+		".png", ".jpg", ".jpeg", ".gif",
 	}
 }
 
@@ -235,7 +236,8 @@ func (service *GalleryService) Images(galleryID int) ([]Image, error) {
 // Image returns the image defined by the given filename and given gallery. An
 // error is returned in case the image does not exist
 func (service *GalleryService) Image(galleryID int, filename string) (Image, error) {
-	imagePath := filepath.Join(service.galleryDir(galleryID), filename)
+	galleryDir := service.galleryDir(galleryID)
+	imagePath := filepath.Join(galleryDir, filename)
 	_, err := os.Stat(imagePath)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
@@ -251,6 +253,33 @@ func (service *GalleryService) Image(galleryID int, filename string) (Image, err
 		Path:      imagePath,
 	}
 	return image, nil
+}
+
+// CreateImage creates an image from the provided contents and stores it in the
+// respective gallery directory
+func (service *GalleryService) CreateImage(galleryID int, filename string, contents io.Reader) error {
+	// Checks if the directory to which the image will be saved exists. In case
+	// it does not, the directory is created
+	galleryDir := service.galleryDir(galleryID)
+	err := os.MkdirAll(galleryDir, 0755)
+	if err != nil {
+		return fmt.Errorf("creating gallery-%d image directory: %w", galleryID, err)
+	}
+
+	// Creates the image file
+	imagePath := filepath.Join(galleryDir, filename)
+	dst, err := os.Create(imagePath)
+	if err != nil {
+		return fmt.Errorf("creating image file: %w", err)
+	}
+	defer dst.Close()
+
+	_, err = io.Copy(dst, contents)
+	if err != nil {
+		return fmt.Errorf("copying contents to image: %w", err)
+	}
+
+	return nil
 }
 
 // DeleteImage deletes the image defined by the given gallery ID and filename.
