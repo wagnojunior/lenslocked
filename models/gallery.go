@@ -16,9 +16,10 @@ import (
 // unpublished). The default publication status of a gallery is unpublished
 type PublicationStatus string
 
-const (
-	// standard directory where the images are stored
-	stdImageDir string = "images"
+// Variables related to the standards
+var (
+	stdImagesDir string = "images"
+	stdImagesExt        = [4]string{".png", ".jpg", ".jpeg", ".gif"}
 )
 
 // Defines the two publication status
@@ -42,13 +43,17 @@ type Image struct {
 	Filename  string
 }
 
-// GalleryService defines the connection to the `gallery` DB
+// GalleryService defines available services
 type GalleryService struct {
+	// Connection to the database
 	DB *sql.DB
 	// ImagesDir is used to tell the GalleryService where to store and locate
 	// images. If not set, the GalleryService will default to using the "images"
 	// directory
 	ImagesDir string
+	// ImagesExt define the supported images extension types. If not set, the
+	// GalleryService will default to using the standard image extensions
+	ImagesExt []string
 }
 
 // Create creates a new gallery with the given title, publication status and
@@ -199,15 +204,31 @@ func (service *GalleryService) Delete(id int) error {
 	return nil
 }
 
+// galleryDir returns the directory where the images of the given gallery are
+// stored. If no directory is specified (i.e.: empty string), then the standard
+// directory, defined as the constant stdImagesDir, is used.
+func (service *GalleryService) galleryDir(id int) string {
+	imagesDir := service.ImagesDir
+	if imagesDir == "" {
+		imagesDir = stdImagesDir
+	}
+
+	return filepath.Join(imagesDir, fmt.Sprintf("gallery-%d", id))
+}
+
 // /////////////////////////////////////////////////////////////////////////////
 // IMAGES
 // /////////////////////////////////////////////////////////////////////////////
 
 // extensions return a list of image extensions supported by the server
 func (service *GalleryService) extensions() []string {
-	return []string{
-		".png", ".jpg", ".jpeg", ".gif",
+	imagesExt := service.ImagesExt
+	var imagesExtNotSet bool = (len(imagesExt) == 0)
+	if imagesExtNotSet {
+		imagesExt = stdImagesExt[:]
 	}
+
+	return imagesExt
 }
 
 // contentTypes returns a list of image content types supported by the server
@@ -338,16 +359,4 @@ func hasExtension(file string, extension []string) bool {
 	}
 
 	return false
-}
-
-// galleryDir returns the directory where the images of the given gallery are
-// stored. If no directory is specified (i.e.: empty string), then the standard
-// directory, defined as the constant stdImageDir, is used.
-func (service *GalleryService) galleryDir(id int) string {
-	imagesDir := service.ImagesDir
-	if imagesDir == "" {
-		imagesDir = stdImageDir
-	}
-
-	return filepath.Join(imagesDir, fmt.Sprintf("gallery-%d", id))
 }
