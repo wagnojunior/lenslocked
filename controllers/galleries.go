@@ -328,7 +328,7 @@ func (g Galleries) UploadImage(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			var fileErr models.FileError
 			if errors.As(err, &fileErr) {
-				msg := fmt.Sprintf("%v has an invalid content type or extension. Only .png, .jpg, .jpeg, and .gif files can be uploaded.", fileHeader.Filename)
+				msg := fmt.Sprintf("%v has an invalid content type or extension. Only %v files can be uploaded.", fileHeader.Filename, g.GalleryService.ImagesExt)
 				http.Error(w, msg, http.StatusBadRequest)
 				return
 			}
