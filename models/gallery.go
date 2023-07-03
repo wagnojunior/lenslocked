@@ -203,6 +203,13 @@ func (service *GalleryService) extensions() []string {
 	}
 }
 
+// contentTypes returns a list of image content types supported by the server
+func (service *GalleryService) contentTypes() []string {
+	return []string{
+		"image/png", "image/jpg", "image/jpeg", "image/gif",
+	}
+}
+
 // Images returns a slice of Image in the given gallery.
 func (service *GalleryService) Images(galleryID int) ([]Image, error) {
 	// Firstly, the directory of the given gallery is retrieved. Secondly, a
@@ -257,11 +264,22 @@ func (service *GalleryService) Image(galleryID int, filename string) (Image, err
 
 // CreateImage creates an image from the provided contents and stores it in the
 // respective gallery directory
-func (service *GalleryService) CreateImage(galleryID int, filename string, contents io.Reader) error {
+func (service *GalleryService) CreateImage(galleryID int, filename string, contents io.ReadSeeker) error {
+	// Checks whether the content-type and the extension of the file are
+	// supported
+	err := checkContentType(contents, service.contentTypes())
+	if err != nil {
+		return fmt.Errorf("creating image %v: %w", filename, err)
+	}
+	err = checkExtension(filename, service.extensions())
+	if err != nil {
+		return fmt.Errorf("creating image %v: %w", filename, err)
+	}
+
 	// Checks if the directory to which the image will be saved exists. In case
 	// it does not, the directory is created
 	galleryDir := service.galleryDir(galleryID)
-	err := os.MkdirAll(galleryDir, 0755)
+	err = os.MkdirAll(galleryDir, 0755)
 	if err != nil {
 		return fmt.Errorf("creating gallery-%d image directory: %w", galleryID, err)
 	}
