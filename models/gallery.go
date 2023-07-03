@@ -18,8 +18,9 @@ type PublicationStatus string
 
 // Variables related to the standards
 var (
-	stdImagesDir string = "images"
-	stdImagesExt        = [4]string{".png", ".jpg", ".jpeg", ".gif"}
+	stdImagesDir  string = "images"
+	stdImagesExt         = [4]string{".png", ".jpg", ".jpeg", ".gif"}
+	stdImagesCont        = [4]string{"image/png", "image/jpg", "image/jpeg", "image/gif"}
 )
 
 // Defines the two publication status
@@ -48,12 +49,17 @@ type GalleryService struct {
 	// Connection to the database
 	DB *sql.DB
 	// ImagesDir is used to tell the GalleryService where to store and locate
-	// images. If not set, the GalleryService will default to using the "images"
-	// directory
+	// images. If not set, the GalleryService defaults to using the standard
+	// image directory `stdImagesDir`
 	ImagesDir string
-	// ImagesExt define the supported images extension types. If not set, the
-	// GalleryService will default to using the standard image extensions
+	// ImagesExt defines the supported image extension types. If not set, the
+	// GalleryService defaults to using the standard image extensions
+	// `stdImagesExt`
 	ImagesExt []string
+	// ImagesCont defines the supported image content types. If not set, the
+	// GalleryService defaults to using the standard image content types
+	// `stdImagesCont`
+	ImagesCont []string
 }
 
 // Create creates a new gallery with the given title, publication status and
@@ -233,9 +239,13 @@ func (service *GalleryService) extensions() []string {
 
 // contentTypes returns a list of image content types supported by the server
 func (service *GalleryService) contentTypes() []string {
-	return []string{
-		"image/png", "image/jpg", "image/jpeg", "image/gif",
+	imagesCont := service.ImagesCont
+	var imagesContNotSet bool = (len(imagesCont) == 0)
+	if imagesContNotSet {
+		imagesCont = stdImagesCont[:]
 	}
+
+	return imagesCont
 }
 
 // Images returns a slice of Image in the given gallery.
