@@ -96,7 +96,9 @@ func main() {
 		DB: db,
 	}
 	galleryService := &models.GalleryService{
-		DB: db,
+		DB:        db,
+		ImagesDir: "",                // Use default value if not set
+		ImagesExt: make([]string, 0), // Use efault value if not set
 	}
 	emailService := models.NewEmailService(cfg.SMTP)
 
