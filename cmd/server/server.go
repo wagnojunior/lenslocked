@@ -208,6 +208,9 @@ func main() {
 		})
 
 	})
+	// Serve static files from the folder `assets`
+	assetsHandler := http.FileServer(http.Dir("assets"))
+	r.Get("/assets/*", http.StripPrefix("/assets", assetsHandler).ServeHTTP)
 
 	// Starts the server
 	fmt.Printf("Starting the server on %s...", cfg.Server.Address)
