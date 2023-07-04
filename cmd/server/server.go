@@ -82,10 +82,20 @@ func main() {
 		panic(err)
 	}
 
+	err = run(cfg)
+	if err != nil {
+		panic(err)
+	}
+}
+
+// run runs the application. This is apart from main to make it easier to test
+// the main function
+func run(cfg config) error {
+
 	// Creates a connection to the DB
 	db, err := models.Open(cfg.PSQL)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer db.Close()
 
@@ -93,7 +103,7 @@ func main() {
 	// (thus the ".")
 	err = models.MigrateFS(db, migrations.FS, ".")
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	// Defines the services
@@ -216,6 +226,8 @@ func main() {
 	fmt.Printf("Starting the server on %s...", cfg.Server.Address)
 	err = http.ListenAndServe(cfg.Server.Address, r)
 	if err != nil {
-		panic(err)
+		return err
 	}
+
+	return nil
 }
