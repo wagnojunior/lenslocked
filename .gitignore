@@ -96,3 +96,6 @@ $RECYCLE.BIN/
 
 # Env Variables
 .env
+
+# Node modules
+node_modules/
