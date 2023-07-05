@@ -1,3 +1,14 @@
+# Container used to build the Tailwind CSS style
+FROM node:latest AS tailwind-builder
+WORKDIR /tailwind
+RUN npm init -y && \
+    npm install tailwindcss && \
+    npx tailwindcss init
+COPY ./templates /templates
+COPY ./tailwind/tailwind.config.js /src/tailwind.config.js
+COPY ./tailwind/styles.css /src/styles.css
+RUN npx tailwindcss -c /src/tailwind.config.js -i /src/styles.css -o /styles.css --minify
+
 # Container used to build the Go application. This container is large and 
 # consumes considerable resources. Therefore, it is not advisable to run the Go
 # application from here.
@@ -17,4 +28,5 @@ WORKDIR /app
 COPY ./assets ./assets
 COPY .env .env
 COPY --from=builder /app/server ./server
+COPY --from=tailwind-builder /styles.css /app/assets/styles.css
 CMD ./server
