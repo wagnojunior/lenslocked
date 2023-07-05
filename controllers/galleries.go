@@ -414,6 +414,11 @@ func userMustOwnGallery(w http.ResponseWriter, r *http.Request, gallery *models.
 // gallery is denied. Otherwise, access is granted
 func galleryMustBeVisible(w http.ResponseWriter, r *http.Request, gallery *models.Gallery) error {
 	user := context.User(r.Context())
+	if user == nil {
+		user = &models.User{
+			ID: -1,
+		}
+	}
 
 	var thirdPartyGallery bool = (gallery.UserID != user.ID)
 	var unpublished bool = (gallery.Status == models.Unpublished)
