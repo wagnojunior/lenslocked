@@ -223,7 +223,7 @@ func run(cfg config) error {
 	r.Get("/assets/*", http.StripPrefix("/assets", assetsHandler).ServeHTTP)
 
 	// Starts the server
-	fmt.Printf("Starting the server on %s...", cfg.Server.Address)
+	fmt.Printf("NEW MESSAGE: Starting the server on %s...", cfg.Server.Address)
 	err = http.ListenAndServe(cfg.Server.Address, r)
 	if err != nil {
 		return err
