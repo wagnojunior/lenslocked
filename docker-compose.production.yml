@@ -20,7 +20,7 @@ services:
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
 
-  dv:
+  db:
     environment:
       PGDATA: /var/lib/postgresql/data/pgdata
       POSTGRES_USER: ${PSQL_USER}
