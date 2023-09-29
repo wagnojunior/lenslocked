@@ -17,24 +17,28 @@ func StaticHandler(tpl Template) http.HandlerFunc {
 // FAQ handles the templating of the FAQ page
 func FAQ(tpl Template) http.HandlerFunc {
 	questions := []struct {
-		Question string
+		Question template.HTML
 		Answer   template.HTML // This type indicates that it is safe to render the answers as HTML
 	}{
 		{
-			Question: "Is there a free version?",
-			Answer:   "Yes! We offer a free trial for 30 days on any paid plans.",
+			Question: "What is the purpose of this website?",
+			Answer:   `The purpose of this website is to learn web development with Go. It is the final project of the course <span class="font-semibold">Web Development with Go v2</span> by Jon Calhoun.`,
 		},
 		{
-			Question: "What are your support hours?",
-			Answer:   "We have support staff answering emails 24/7, though response times may be a bit slower on weekends.",
+			Question: "What did you lean during the development of this application?",
+			Answer:   "I learned about the basics of web development (HTTP methods, handlers, routers, cookies, sessions, etc.), MVC design pattern, database (PostgreSQL), schema migrations, user authentication, Go templates, sending emails from the application, error handling, and deployment with Docker.",
 		},
 		{
-			Question: "How do I contact support?",
-			Answer:   `Email us at <a href="mailto:support@panpancorp.com">support@panpancorp.com</a>`,
+			Question: "What skills did you develop during the development of this applications?",
+			Answer:   `I developed proficiency in <span class="font-semibold">Vim motions</span>, which significantly increased my typing speed. Moreover, improved my undersdanting of UI/UX and the importance of responsive design (using Tailwind).`,
 		},
 		{
-			Question: "Where is your office located?",
-			Answer:   "Our entire time is remote.",
+			Question: "Did you apply what you leaned on other projects?",
+			Answer:   `Yes! I am already developing a commercial website for a consulting company in South Korea.`,
+		},
+		{
+			Question: `Do you need previous knowledge of Go to take the course <span class="font-semibold">Web Development with Go v2</span> by Jon Calhoun?`,
+			Answer:   `Yes! A basic understanding of Go is required. I recommend the Udemy course <span class="font-semibold">Go: The Complete Developer's Guide</span> by Stepehn Grider.`,
 		},
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
