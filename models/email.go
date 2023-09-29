@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	DefaultSender = "support@lenslocked.com"
+	DefaultSender = "support@wagnojunior.xyz"
 )
 
 // SMTPConfig defines a new type to hold the SMTP configuration. These
