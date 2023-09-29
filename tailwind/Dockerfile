@@ -11,6 +11,9 @@ WORKDIR /tailwind
 # Install tailwindcss and initialize
 RUN npm init -y && \
     npm install tailwindcss && \
+    npm i -D daisyui@latest \
+    npm install tailwindcss-fluid-type \
+    npm install -D tailwindcss-fluid-spacing \
     npx tailwindcss init
 
 # Run tailwindcss. This will watch for changes in /src/styles.css and output to /dst/styles.css
