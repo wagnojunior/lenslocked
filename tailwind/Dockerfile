@@ -8,6 +8,9 @@ RUN mkdir /tailwind
 # A workdir is required for npm to work correctly.
 WORKDIR /tailwind
 
+# Add a random file so docker won't use any cached version
+ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
+
 # Install tailwindcss and initialize
 RUN npm init -y && \
     npm install tailwindcss && \
