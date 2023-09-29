@@ -4,7 +4,7 @@ WORKDIR /tailwind
 RUN npm init -y && \
     npm install tailwindcss && \
     npm i daisyui@latest && \
-    npm install tailwindcss-fluid-type && \
+#    npm install tailwindcss-fluid-type && \
     npm install tailwindcss-fluid-spacing && \
     npx tailwindcss init
 COPY ./templates /templates
