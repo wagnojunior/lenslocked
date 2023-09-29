@@ -1,9 +1,17 @@
 {{template "header" .}}
-<div class="flex flex-col">
-    <div class="px-6 py-6">
-        <div>
-            <h1>Welcome to my awesome site!</h1>
-        </div> 
+<div class="flex flex-col px-3">
+    <div class="hero min-h-screen bg-base-100">
+        <div class="hero-content flex-col lg:flex-row">
+            <img src="https://plus.unsplash.com/premium_photo-1663051263196-ab47c64479cc?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2071&q=80"
+                class="rounded-lg shadow-2xl object-scale-down w-5/6" />
+            <div>
+                <h1 class="fluidtext-3xl font-bold">SHARE YOUR MEMORIES</h1>
+                <p class="py-6 fluidtext-base">Welcome to <span
+                        class="font-serif font-semibold fluidtext-lg">Lenslocked</span> – where memories unite. Easily
+                    sign up, create galleries, and share moments with family and friends. Start sharing joy today!</p>
+                <a href="/signup" role="button" class="btn fluidtext-base">Sign up</a>
+            </div>
+        </div>
     </div>
 </div>
 {{template "footer" .}}

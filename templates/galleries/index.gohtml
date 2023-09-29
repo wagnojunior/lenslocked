@@ -1,79 +1,136 @@
 {{template "header" .}}
 <div class="w-grow">
     <div class="px-6">
-        <h1 class="py-4 text-4xl font-bold text-gray-800">
-            My Galleries
-        </h1>
-        <table class="w-full table-fixed">
-            <thead>
-                <tr>
-                    <th class="p-2 text-left w-24">ID</th>
-                    <th class="p-2 text-left">Title</th>
-                    <th class="p-2 text-left w-96">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
+        <div class="flex">
+            <h1 class="py-4 fluidtext-3xl font-bold text-gray-800 flex-grow">
+                My Galleries
+            </h1>
+            <div class="py-4">
+                <a href="/galleries/new" class="btn">
+                    New
+                </a>
+            </div>
+        </div>
+
+        <div>
+            <div class="flex flex-row fluidtext-lg font-medium mb-vw-3">
+                <h1 class="flex flex-grow">Title</h1>
+                <h1>Actions</h1>
+            </div>
+            <div id="gallery_container" class="divide-y-2">
                 {{range .Galleries}}
-                <tr class="border">
-                    <td class="p-2 border">{{.ID}}</td>
-                    <td class="p-2 border">{{.Title}}</td>
-                    <td class="p-2 border flex space-x-2">
-                        <a href="/galleries/{{.ID}}"
-                            class="
-                                py-1 px-2
-                                bg-blue-100 hover:bg-blue-200
-                                border border-blue-600
-                                text-xs text-blue-600
-                                rounded">View</a>
-                        <a href="/galleries/{{.ID}}/edit"
-                            class="
-                                py-1 px-2
-                                bg-yellow-100 hover:bg-yellow-200
-                                border border-yellow-600
-                                text-xs text-yellow-600
-                                rounded">Edit</a>
+                <div class="flex flex-row p-vw-2 fluidtext-base items-center">
+                    <h1 class="flex flex-grow">{{.Title}}</h1>
+                    <button class="data-dot_btn fluidtext-sm font-bold lg:hidden">• • •</button>
+                    <ul class="data-dot_menu hidden z-10 menu menu-vertical absolute right-vw-28-min@sm lg:right-vw-2 lg:menu-horizontal lg:btn-ghost bg-base-200 rounded-box fluidtext-sm">
+                        <li><a href="/galleries/{{.ID}}">View</a></li>
+                        <li><a href="/galleries/{{.ID}}/edit">Edit</a></li>
                         {{if eq .Status "unpublished"}}
                         <form action="/galleries/{{.ID}}/publish" method="post" onsubmit="return confirm('Do you really want to publish this gallery?');">
                             {{csrfField}}
-                            <button type="submit"
-                                class="
-                                    py-1 px-2
-                                    bg-green-100 hover:bg-green-200
-                                    border border-green-600
-                                    text-xs text-green-600
-                                    rounded">Publish</button>
-                            </form>
-                        {{end}}
-                        {{if eq .Status "published"}}
+                            <li><button type="submit">Publish</button></li>
+                        </form>
+                        {{else}}
                         <form action="/galleries/{{.ID}}/unpublish" method="post" onsubmit="return confirm('Do you really want to unpublish this gallery?');">
                             {{csrfField}}
-                            <button type="submit"
-                                class="
-                                    py-1 px-2
-                                    bg-gray-100 hover:bg-gray-200
-                                    border border-gray-600
-                                    text-xs text-gray-600
-                                    rounded">Unpublish</button>
-                            </form>
+                            <li><button type="submit">Unpublish</button></li>
+                        </form>
                         {{end}}
                         <form action="/galleries/{{.ID}}/delete" method="post" onsubmit="return confirm('Do you really want to delete this gallery?');">
-                        {{csrfField}}
-                        <button type="submit"
-                            class="
-                                py-1 px-2
-                                bg-red-100 hover:bg-red-200
-                                border border-red-600
-                                text-xs text-red-600
-                                rounded">Delete</button>
+                            {{csrfField}}
+                            <li><button type="submit">Delete</button></li>
                         </form>
-                    </td>
-                </tr>
+                    </ul>
+                    <!-- HIDDEN BUTTON TO CLOSE THE DOT MENU -->
+                    <button type="button" tabindex="1" class="data-hidden_btn hidden z-0 fixed inset-0 cursor-default bg-black opacity-50 h-full w-full"></button>
+                </div>
                 {{end}}
-            </tbody>
-        </table>
-        <div class="py-4">
-            <a href="/galleries/new" class="py-2 px-8 bg-blue-600 hover:bg-blue-700 text-white rounded font-bold text-lg">New</a>
+            </div>
         </div>
     </div>
 </div>
+
+<!-- SCRIPTS -->
+<script>
+    addID();
+    openDotMenu();
+    closeDotMenu();
+
+    // `addID` adds an unique ID to relevant elements inside the gallery container.
+    function addID() {
+        const galleryContainer = document.getElementById('gallery_container');
+        const numberChildren = galleryContainer.children.length;
+
+        for (let i = 0; i < numberChildren; i++) {
+            let gallery = galleryContainer.children[i];
+            let dotBtn = gallery.children[1];
+            let dotMenu = gallery.children[2];
+            let hiddenBtn = gallery.children[3];
+
+            gallery.id = `gallery_${i}`;
+            dotBtn.id = `dot_btn_${i}`;
+            dotMenu.id = `dot_menu_${i}`;
+            hiddenBtn.id = `hidden_btn_${i}`;
+        }
+    }
+
+    // `isDotBtn` checks if the given ID includes the string that defines a dot button.
+    function isDotBtn(id) {
+        return (id.includes('dot_btn_'));
+    }
+
+    // `isHiddenBtn` checks if the given ID includes the string that defines a hidden button.
+    function isHiddenBtn(id) {
+        return (id.includes('hidden_btn_'));
+    }
+
+    // `extractID` extracts the ID nunber of the given ID string.
+    function extractID(id) {
+        const match = id.match(/\d+/);
+        
+        if (match) {
+            return match[0];
+        } else {
+            return -1;
+        }
+    }
+
+    // `toggleDotMenu` toggles the hidden class of the dot menu and hidden button defined by the given ID.
+    function toggleDotMenu(id) {
+        const dotMenu = document.getElementById('dot_menu_'+id);
+        const hiddenBtn = document.getElementById('hidden_btn_'+id);
+
+        dotMenu.classList.toggle('hidden');
+        hiddenBtn.classList.toggle('hidden');
+    }
+
+    // `openDotMenu` opens the dot menu and the hidden button associated with the clicked dot button.
+    function openDotMenu() {
+        const galleryContainer = document.getElementById('gallery_container');
+        const numberChildren = galleryContainer.children.length;
+
+        galleryContainer.addEventListener('click', function(event) {
+            clickedElement = event.target;
+            if (isDotBtn(clickedElement.id)) {
+                const id = extractID(clickedElement.id);
+                toggleDotMenu(id);
+            }
+        });
+    }
+
+    // `closeDotMenu` closes the dot menu and the hidden button associated with the clicked hidden button.
+    function closeDotMenu() {
+        const galleryContainer = document.getElementById('gallery_container');
+        const numberChildren = galleryContainer.children.length;
+
+        galleryContainer.addEventListener('click', function(event) {
+            clickedElement = event.target;
+            if (isHiddenBtn(clickedElement.id)) {
+                const id = extractID(clickedElement.id);
+                toggleDotMenu(id);
+            }
+        });
+    }
+</script>
+
 {{template "footer" .}}
