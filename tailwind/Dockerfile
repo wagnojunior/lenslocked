@@ -9,7 +9,7 @@ RUN mkdir /tailwind
 WORKDIR /tailwind
 
 # Added
-ARG CACHEBUST=1 
+ARG CACHEBUST
 
 # Install tailwindcss and initialize
 RUN npm init -y && \
