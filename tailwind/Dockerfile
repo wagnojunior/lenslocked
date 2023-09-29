@@ -8,6 +8,8 @@ RUN mkdir /tailwind
 # A workdir is required for npm to work correctly.
 WORKDIR /tailwind
 
+ARG CACHEBUST=1 
+
 # Install tailwindcss and initialize
 RUN npm init -y && \
     npm install tailwindcss && \
