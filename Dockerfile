@@ -10,7 +10,7 @@ RUN npm init -y && \
 COPY ./templates /templates
 COPY ./tailwind/tailwind.config.js /src/tailwind.config.js
 COPY ./tailwind/styles.css /src/styles.css
-RUN npx tailwindcss -c /src/tailwind.config.js -i /src/styles.css -o /styles.css --minify
+RUN npx tailwindcss -c /src/tailwind.config.js -i /src/styles.css -o /styles.css --minify --verbose
 
 # Container used to build the Go application. This container is large and 
 # consumes considerable resources. Therefore, it is not advisable to run the Go
