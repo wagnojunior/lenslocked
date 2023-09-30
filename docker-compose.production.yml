@@ -8,8 +8,8 @@ services:
     restart: always
     volumes:
       - ~/data/lenslocked.wagnojunior.xyz/images:/app/images
-    ports: # TODO: DELETE PORTS IN THE PRODUCTION ENVIRONMENT
-      - 3030:3030
+    # ports: # TODO: DELETE PORTS WHEN RUNNING INSIDE A DOCKER CONTAINER
+    #   - 3030:3030
     depends_on:
       - db
 

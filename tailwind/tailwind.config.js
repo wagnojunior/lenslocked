@@ -9,7 +9,7 @@ module.exports = {
     extend: {},
   },
   plugins: [
-    require('tailwindcss-fluid-type')({
+    require('/tailwind/node_modules/tailwindcss-fluid-type')({
            // your fluid type settings
             // works only with unitless numbers
             // This numbers are the defaults settings
@@ -43,14 +43,11 @@ module.exports = {
                 '9xl': [10, 1],
             },
         }),
-    require('tailwindcss-fluid-spacing')({
+    require('/tailwind/node_modules/tailwindcss-fluid-spacing')({
       extend: {
         sizes: [100, 105, 110, 150],
       },
     }),
-    require("daisyui"),
+    require('/tailwind/node_modules/daisyui'),
   ],
-  // variants: {
-  //       fluidType: ['responsive']
-  //   }
 }

@@ -1,3 +1,5 @@
+# TODO: replace this with a domain before deploying
+# :80
 lenslocked.wagnojunior.xyz
 
 reverse_proxy server:3030

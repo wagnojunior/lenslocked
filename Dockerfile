@@ -2,13 +2,16 @@
 FROM node:latest AS tailwind-builder
 WORKDIR /tailwind
 RUN npm init -y && \
+    npm cache clean --force && \
     npm install tailwindcss && \
-    npm i daisyui@latest && \
-#    npm install tailwindcss-fluid-type && \
+    npm install tailwindcss-fluid-type && \
     npm install tailwindcss-fluid-spacing && \
+    npm install daisyui@latest && \
     npx tailwindcss init
 COPY ./templates /templates
 COPY ./tailwind/tailwind.config.js /src/tailwind.config.js
+COPY ./tailwind/package.json /src/package.json
+COPY ./tailwind/package-lock.json /src/package-lock.json
 COPY ./tailwind/styles.css /src/styles.css
 RUN npx tailwindcss -c /src/tailwind.config.js -i /src/styles.css -o /styles.css --minify
 
