@@ -38,7 +38,7 @@ func FAQ(tpl Template) http.HandlerFunc {
 		},
 		{
 			Question: `Do you need previous knowledge of Go to take the course <span class="font-semibold">Web Development with Go v2</span> by Jon Calhoun?`,
-			Answer:   `Yes! A basic understanding of Go is required. I recommend the Udemy course <span class="font-semibold">Go: The Complete Developer's Guide</span> by Stepehn Grider.`,
+			Answer:   `Yes! A basic understanding of Go is required! I recommend the Udemy course <span class="font-semibold">Go: The Complete Developer's Guide</span> by Stepehn Grider.`,
 		},
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
