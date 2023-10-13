@@ -29,8 +29,8 @@ func FAQ(tpl Template) http.HandlerFunc {
 			Answer:   "I learned about the basics of web development (HTTP methods, handlers, routers, cookies, sessions, etc.), MVC design pattern, database (PostgreSQL), schema migrations, user authentication, Go templates, sending emails from the application, error handling, and deployment with Docker.",
 		},
 		{
-			Question: "What skills did you develop during the development of this applications?",
-			Answer:   `I developed proficiency in <span class="font-semibold">Vim motions</span>, which significantly increased my typing speed. Moreover, improved my undersdanting of UI/UX and the importance of responsive design (using Tailwind).`,
+			Question: "What skills did you develop during the development of this application?",
+			Answer:   `I developed proficiency in <span class="font-semibold">Vim motions</span>, which significantly increased my typing speed. Moreover, I improved my undersdanting of UI/UX and the importance of responsive design (using Tailwind).`,
 		},
 		{
 			Question: "Did you apply what you leaned on other projects?",
