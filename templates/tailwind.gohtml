@@ -1,5 +1,5 @@
 {{define "header"}}
-<!doctype html>
+<!doctype html data-theme="light">
 <html>
 
 <head>
@@ -29,13 +29,13 @@
                         <li><a href="/faq" class="fluidtext-sm">FAQ</a></li>
                         <div class="divider">Account</div>
                         {{if currentUser}}
-                            <li><a href="/galleries" class="fluidtext-sm">My galleries</a></li>
-                            <form action="/signout" method="post">
-                                <div class="hidden">{{csrfField}}</div>
-                                <li><button type="submit" class="fluidtext-sm">Sign out</button></li>
-                            </form>
+                        <li><a href="/galleries" class="fluidtext-sm">My galleries</a></li>
+                        <form action="/signout" method="post">
+                            <div class="hidden">{{csrfField}}</div>
+                            <li><button type="submit" class="fluidtext-sm">Sign out</button></li>
+                        </form>
                         {{else}}
-                            <li><a href="/signin" class="fluidtext-sm">Sign in</a></li>
+                        <li><a href="/signin" class="fluidtext-sm">Sign in</a></li>
                         {{end}}
                     </ul>
                 </div>
@@ -51,13 +51,13 @@
             </div>
             <div class="navbar-end">
                 {{if currentUser}}
-                    <a href="/galleries" class="btn btn-ghost hidden lg:flex lg:fluidtext-base">My Galleries</a>
-                    <form action="/signout" method="post">
-                        <div class="hidden">{{csrfField}}</div>
-                        <button type="submit" class="btn btn-ghost lg:fluidtext-sm">Sign out</button>
-                    </form>
+                <a href="/galleries" class="btn btn-ghost hidden lg:flex lg:fluidtext-base">My Galleries</a>
+                <form action="/signout" method="post">
+                    <div class="hidden">{{csrfField}}</div>
+                    <button type="submit" class="btn btn-ghost lg:fluidtext-sm">Sign out</button>
+                </form>
                 {{else}}
-                    <a href="/signin" class="btn btn-ghost lg:fluidtext-base">Sign in</a>
+                <a href="/signin" class="btn btn-ghost lg:fluidtext-base">Sign in</a>
                 {{end}}
             </div>
         </div>
@@ -96,9 +96,9 @@
 
     <footer class="footer footer-center p-4 bg-base-100 text-base-content mt-auto">
         <aside>
-          <p>Copyright © 2023 - Contact me: contact@wagnojunior.xyz</p>
+            <p>Copyright © 2023 - Contact me: contact@wagnojunior.xyz</p>
         </aside>
-      </footer>
+    </footer>
 </body>
 
 </html>
