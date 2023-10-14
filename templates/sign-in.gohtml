@@ -2,7 +2,8 @@
 <div class="flex-grow">
     <div class="py-12 flex justify-center">
         <div class="px-8 py-8 rounded shadow">
-            <h1 class=" pb-4 text-center fluidtext-3xl font-bold dark:text-[#a6adba] text-gray-900 border-b border-indigo-400">
+            <h1
+                class=" pb-4 text-center fluidtext-3xl font-bold dark:text-[#a6adba] text-gray-900 border-b border-indigo-400">
                 Welcome back!
             </h1>
             <form action="/signin" method="post" class="pt-4">
@@ -10,17 +11,19 @@
                     {{csrfField}}
                 </div>
                 <div class="py-2">
-                    <label for="email" class="fluidtext-sm font-semibold dark:text-[#a6adba] text-gray-800">Email address</label>
+                    <label for="email" class="fluidtext-sm font-semibold dark:text-[#a6adba] text-gray-800">Email
+                        address</label>
                     <input name="email" id="email" type="email" placeholder="Email address" required
                         autocomplete="email"
-                        class="w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-800 rounded"
+                        class="w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-800 dark:text-[#a6adba] rounded"
                         value="{{.Email}}" {{if not .Email}}autofocus{{end}} />
                 </div>
                 <div class="py-2">
-                    <label for="password" class="fluidtext-sm font-semibold dark:text-[#a6adba] text-gray-800">Password</label>
+                    <label for="password"
+                        class="fluidtext-sm font-semibold dark:text-[#a6adba] text-gray-800">Password</label>
                     <input name="password" id="password" type="password" placeholder="Password" required
-                        class="w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-800 rounded" {{if
-                        .Email}}autofocus{{end}} />
+                        class="w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-800 dark:text-[#a6adba] rounded"
+                        {{if .Email}}autofocus{{end}} />
                 </div>
                 <div class="py-4">
                     <button type="submit" class="btn btn-block">Sign in</button>

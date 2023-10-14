@@ -1,7 +1,7 @@
 {{template "header" .}}
 <div class="w-grow">
     <div class="px-6">
-        <h1 class="py-4 fluidtext-3xl font-bold text-gray-800 flex-grow">
+        <h1 class="py-4 fluidtext-3xl font-bold text-gray-800 dark:text-[#a6adba] flex-grow">
             Edit your gallery
         </h1>
         <form action="/galleries/{{.ID}}" method="post" class="pt-4">
@@ -9,14 +9,13 @@
                 {{csrfField}}
             </div>
             <div class="py-2">
-                <label for="title" class="fluidtext-lg font-semibold text-gray-800">Title</label>
-                <input
-                    name="title" id="title" type="text" placeholder="Gallery Title" required class="w-full px-3 py-2 border border-gray-300 fluidtext-base placeholder-gray-500 text-gray-800 rounded"
-                    value="{{.Title}}"/>
+                <label for="title" class="fluidtext-lg font-semibold text-gray-800 dark:text-[#a6adba]">Title</label>
+                <input name="title" id="title" type="text" placeholder="Gallery Title" required
+                    class="w-full px-3 py-2 border border-gray-300 fluidtext-base placeholder-gray-500 text-gray-800 dark:text-[#a6adba] rounded"
+                    value="{{.Title}}" />
             </div>
             <div class="py-4">
-                <button
-                    type="submit" class="btn">
+                <button type="submit" class="btn">
                     Update
                 </button>
             </div>
@@ -29,17 +28,17 @@
 
         <!-- Set up the images preview -->
         <div class="py-4 ">
-            <h2 class="pb-4 text-lg font-semibold text-gray-800">
-                Current images    
+            <h2 class="pb-4 text-lg font-semibold text-gray-800 dark:text-[#a6adba]">
+                Current images
             </h2>
             <div class="py-2 grid grid-cols-8 gap-2">
                 {{range .Images}}
-                    <div class="h-min w-full relative">
-                        <div class="absolute top-1 left-1">
-                            {{template "delete_image_form" .}}
-                        </div>
-                        <img class="w-full" src="/galleries/{{.GalleryID}}/images/{{.FilenameEscaped}}">
+                <div class="h-min w-full relative">
+                    <div class="absolute top-1 left-1">
+                        {{template "delete_image_form" .}}
                     </div>
+                    <img class="w-full" src="/galleries/{{.GalleryID}}/images/{{.FilenameEscaped}}">
+                </div>
                 {{end}}
             </div>
         </div>
@@ -50,33 +49,33 @@
                 Dangerous Actions
             </h2>
             <div class="flex">
-                <form action="/galleries/{{.ID}}/delete" method="post"      onsubmit="return confirm('Do you really want to delete this gallery?')">
+                <form action="/galleries/{{.ID}}/delete" method="post"
+                    onsubmit="return confirm('Do you really want to delete this gallery?')">
                     <div class="hidden">
                         {{csrfField}}
                     </div>
-                    <button
-                        type="submit" class="btn btn-error mr-vw-3">
+                    <button type="submit" class="btn btn-error mr-vw-3">
                         Delete
                     </button>
                 </form>
                 {{if eq .Status "unpublished"}}
-                <form action="/galleries/{{.ID}}/publish" method="post"      onsubmit="return confirm('Do you really want to publish this gallery?')">
+                <form action="/galleries/{{.ID}}/publish" method="post"
+                    onsubmit="return confirm('Do you really want to publish this gallery?')">
                     <div class="hidden">
                         {{csrfField}}
                     </div>
-                    <button
-                        type="submit" class="btn btn-success">
+                    <button type="submit" class="btn btn-success">
                         Publish
                     </button>
                 </form>
                 {{end}}
                 {{if eq .Status "published"}}
-                <form action="/galleries/{{.ID}}/unpublish" method="post"      onsubmit="return confirm('Do you really want to unpublish this gallery?')">
+                <form action="/galleries/{{.ID}}/unpublish" method="post"
+                    onsubmit="return confirm('Do you really want to unpublish this gallery?')">
                     <div class="hidden">
                         {{csrfField}}
                     </div>
-                    <button
-                        type="submit" class="btn btn-warning">
+                    <button type="submit" class="btn btn-warning">
                         Unpublish
                     </button>
                 </form>
@@ -88,7 +87,8 @@
 {{template "footer" .}}
 
 {{define "delete_image_form"}}
-<form action="/galleries/{{.GalleryID}}/images/{{.FilenameEscaped}}/delete" method="post" onsubmit="return confirm('Do you really want to delete this image?');">
+<form action="/galleries/{{.GalleryID}}/images/{{.FilenameEscaped}}/delete" method="post"
+    onsubmit="return confirm('Do you really want to delete this image?');">
     <div class="hidden">
         {{csrfField}}
     </div>
@@ -104,7 +104,7 @@
         {{csrfField}}
     </div>
     <div class="py-2 ">
-        <label for="images" class="block mb-2 fluidtext-lg font-semibold text-gray-800">
+        <label for="images" class="block mb-2 fluidtext-lg font-semibold text-gray-800 dark:text-[#a6adba]">
             Add images
             <p class="py-2 fluidtext-xs text-gray-600 font-normal">
                 Please only upload .png, .jpg, .jpeg, and .gif files.

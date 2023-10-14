@@ -2,7 +2,7 @@
 <div class="w-grow">
     <div class="px-6">
         <div class="flex">
-            <h1 class="py-4 fluidtext-3xl font-bold text-gray-800 flex-grow">
+            <h1 class="py-4 fluidtext-3xl font-bold text-gray-800 dark:text-[#a6adba] flex-grow">
                 My Galleries
             </h1>
             <div class="py-4">
@@ -22,27 +22,32 @@
                 <div class="flex flex-row p-vw-2 fluidtext-base items-center">
                     <h1 class="flex flex-grow">{{.Title}}</h1>
                     <button class="data-dot_btn fluidtext-sm font-bold lg:hidden">• • •</button>
-                    <ul class="data-dot_menu hidden z-10 menu menu-vertical absolute right-vw-28-min@sm lg:right-vw-2 lg:menu-horizontal lg:btn-ghost bg-base-200 rounded-box fluidtext-sm">
+                    <ul
+                        class="data-dot_menu hidden z-10 menu menu-vertical absolute right-vw-28-min@sm lg:right-vw-2 lg:menu-horizontal lg:btn-ghost bg-base-200 rounded-box fluidtext-sm">
                         <li><a href="/galleries/{{.ID}}">View</a></li>
                         <li><a href="/galleries/{{.ID}}/edit">Edit</a></li>
                         {{if eq .Status "unpublished"}}
-                        <form action="/galleries/{{.ID}}/publish" method="post" onsubmit="return confirm('Do you really want to publish this gallery?');">
+                        <form action="/galleries/{{.ID}}/publish" method="post"
+                            onsubmit="return confirm('Do you really want to publish this gallery?');">
                             {{csrfField}}
                             <li><button type="submit">Publish</button></li>
                         </form>
                         {{else}}
-                        <form action="/galleries/{{.ID}}/unpublish" method="post" onsubmit="return confirm('Do you really want to unpublish this gallery?');">
+                        <form action="/galleries/{{.ID}}/unpublish" method="post"
+                            onsubmit="return confirm('Do you really want to unpublish this gallery?');">
                             {{csrfField}}
                             <li><button type="submit">Unpublish</button></li>
                         </form>
                         {{end}}
-                        <form action="/galleries/{{.ID}}/delete" method="post" onsubmit="return confirm('Do you really want to delete this gallery?');">
+                        <form action="/galleries/{{.ID}}/delete" method="post"
+                            onsubmit="return confirm('Do you really want to delete this gallery?');">
                             {{csrfField}}
                             <li><button type="submit">Delete</button></li>
                         </form>
                     </ul>
                     <!-- HIDDEN BUTTON TO CLOSE THE DOT MENU -->
-                    <button type="button" tabindex="1" class="data-hidden_btn hidden z-0 fixed inset-0 cursor-default bg-black opacity-50 h-full w-full"></button>
+                    <button type="button" tabindex="1"
+                        class="data-hidden_btn hidden z-0 fixed inset-0 cursor-default bg-black opacity-50 h-full w-full"></button>
                 </div>
                 {{end}}
             </div>
@@ -87,7 +92,7 @@
     // `extractID` extracts the ID nunber of the given ID string.
     function extractID(id) {
         const match = id.match(/\d+/);
-        
+
         if (match) {
             return match[0];
         } else {
@@ -97,8 +102,8 @@
 
     // `toggleDotMenu` toggles the hidden class of the dot menu and hidden button defined by the given ID.
     function toggleDotMenu(id) {
-        const dotMenu = document.getElementById('dot_menu_'+id);
-        const hiddenBtn = document.getElementById('hidden_btn_'+id);
+        const dotMenu = document.getElementById('dot_menu_' + id);
+        const hiddenBtn = document.getElementById('hidden_btn_' + id);
 
         dotMenu.classList.toggle('hidden');
         hiddenBtn.classList.toggle('hidden');
@@ -109,7 +114,7 @@
         const galleryContainer = document.getElementById('gallery_container');
         const numberChildren = galleryContainer.children.length;
 
-        galleryContainer.addEventListener('click', function(event) {
+        galleryContainer.addEventListener('click', function (event) {
             clickedElement = event.target;
             if (isDotBtn(clickedElement.id)) {
                 const id = extractID(clickedElement.id);
@@ -123,7 +128,7 @@
         const galleryContainer = document.getElementById('gallery_container');
         const numberChildren = galleryContainer.children.length;
 
-        galleryContainer.addEventListener('click', function(event) {
+        galleryContainer.addEventListener('click', function (event) {
             clickedElement = event.target;
             if (isHiddenBtn(clickedElement.id)) {
                 const id = extractID(clickedElement.id);
