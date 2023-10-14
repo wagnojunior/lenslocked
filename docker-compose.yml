@@ -14,3 +14,9 @@ services:
       POSTGRES_USER: ${PSQL_USER}
       POSTGRES_PASSWORD: ${PSQL_PASSWORD}
       POSTGRES_DB: ${PSQL_DATABASE}
+    networks:
+      - caddy_caddy
+
+networks:
+  caddy_caddy:
+    external: true
